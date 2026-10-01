@@ -3,7 +3,7 @@
  * ke cache HTTP browser supaya ganti halaman terasa instan.
  */
 
-export const PRELOAD_AHEAD = 4
+export const PRELOAD_AHEAD = 6
 /** Sisa halaman saat chapter berikutnya mulai disiapkan. */
 export const NEXT_CHAPTER_THRESHOLD = 3
 

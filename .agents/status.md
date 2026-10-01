@@ -21,6 +21,7 @@ dan uji API ujung-ke-ujung. Yang tersisa adalah uji yang butuh manusia/perangkat
 | Restore | ekstrak arsip → server kedua di port 4568 boot dari data hasil restore, data utuh |
 | Restart container | `docker compose restart` → 200, `restart: unless-stopped` |
 | Bottom nav menempel ke tepi bawah di PWA iPhone (W-13, status bar `black`) | screenshot iPhone: warna nav menerus sampai tepi layar, pita 47pt hilang |
+| W-15 service worker: cache halaman/cover/ikon/app shell di iPhone, preload 6 | review senior (file identik spesifikasi, `sw.js` `text/javascript`, routing 10/10) + disetujui pemilik setelah uji iPhone |
 | W-14 status bar tembus + `--vh-gap` (probe `fixed`) + nav blur | disetujui pemilik setelah uji iPhone (perbaikan kedua: probe, bukan `innerHeight`) |
 | Prasyarat reboot | Docker Desktop `AutoStart: true` + terdaftar di startup Windows |
 
@@ -37,6 +38,14 @@ dan uji API ujung-ke-ujung. Yang tersisa adalah uji yang butuh manusia/perangkat
 - [ ] Bersihkan sisa jalur lama: port forward 80/443 di router, rule firewall "Caddy HTTP/HTTPS", DNS A record lama.
 
 ## Known issues / catatan
+
+- **63 dari 205** manga library berasal dari source yang extension-nya belum terpasang → cover HTTP 500, chapter tak
+  bisa dibaca. Pasang extension-nya (Browse → Extensions) atau migrasi.
+- Auto-download aktif (limit 2), tetapi `excludeEntryWithUnreadChapters` menyala → hampir tidak pernah mengunduh
+  (hampir semua manga punya chapter belum dibaca). Matikan di More → Settings bila ingin auto-download jalan.
+- Ukuran halaman 700–900 KB (±20 MB/chapter) tetap jadi bottleneck pertama kali dibuka. Konversi bawaan server gagal
+  (`No suitable image converter found for image/jpg`); WebP q80 ±50% lebih kecil (PSNR ~41 dB) butuh konverter
+  eksternal = service kedua → butuh keputusan pemilik.
 
 - Cover beberapa manga gagal dimuat karena CDN sumber (HTTP 404/522, rantai sertifikat tidak lengkap) —
   terlihat di `docker logs` sebagai `fetchHttpSourceMangaThumbnail`. Bukan bug deploy; UI menampilkan placeholder.

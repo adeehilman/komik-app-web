@@ -16,6 +16,7 @@ webui/
 ├── public/                 manifest.webmanifest (standalone, #1B1B1F), icon-180/192/512.png
 └── src/
     ├── main.tsx            mount React + index.css + installViewportFix()
+    ├── (public/sw.js)      service worker cache gambar & app shell (W-15)
     ├── viewportFix.ts      koreksi bug viewport iOS → CSS variable --vh-gap (lihat Tata letak & iOS)
     ├── App.tsx             QueryClient, HashRouter, routes, bottom nav, pemulihan scroll
     ├── index.css           reset + kelas UI bersama (list-item, chip, tab, btn, sheet, progress, action-bar…)
@@ -67,7 +68,24 @@ HashRouter dipakai karena server menyajikan file statis tanpa fallback SPA.
   Daftar query key: `best-practices.md`.
 - Setelan: global meta via `useSetting` (satu query `['globalMeta']` untuk semua key).
 - State UI lokal (`useState`) untuk pencarian, seleksi, dialog. Tidak ada state manager global.
-- Gambar: cache HTTP browser + preload (`reader/preload.ts`). Tidak ada service worker.
+- Gambar & app shell: **service worker** `public/sw.js` (W-15, D-13), didaftarkan di `main.tsx` hanya pada build
+  produksi. Strategi per URL (fungsi `route()`):
+
+  | URL | Cache | Strategi | Batas |
+  |---|---|---|---|
+  | `/`, `index.html`, manifest, ikon PWA | `mihon-shell-v1` | stale-while-revalidate (buka instan, update di belakang) | 60 entri |
+  | `/assets/*` (ber-hash) | `mihon-shell-v1` | cache-first, tanpa kedaluwarsa | 60 entri |
+  | `/api/v1/manga/<m>/chapter/<i>/page/<n>` | `mihon-pages-v1` | cache-first, kunci tanpa query (`?retry=` ikut) | 30 hari, 800 entri |
+  | `/api/v1/manga/<m>/thumbnail` | `mihon-covers-v1` | cache-first | 7 hari, 600 entri |
+  | `/api/v1/extension/icon/*` | `mihon-icons-v1` | cache-first | 30 hari, 300 entri |
+  | `/api/graphql` & API lain, origin lain | — | **tidak disentuh** (selalu jaringan) | — |
+
+  Umur disimpan di header `x-sw-cached-at`; kelebihan entri dibuang dari yang terlama. **Ubah strategi = naikkan
+  `VERSION` di `sw.js`** (cache lama dihapus saat `activate`). `navigator.storage.persist()` diminta saat load.
+  More → Settings → "Penyimpanan di perangkat" (`components/DeviceStorage.tsx`): status, MB, hapus cache gambar.
+  Jebakan: URL halaman memakai urutan chapter, bukan id — bila source menyisipkan chapter, cache bisa salah sampai
+  kedaluwarsa (solusi: tombol Hapus). Rollback: lihat `tasks/W-15-service-worker-cache.md` (SW "bunuh diri").
+  Terverifikasi di iPhone 13 Pro.
 
 ## Tata letak & iOS
 

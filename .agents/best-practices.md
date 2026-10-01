@@ -28,6 +28,8 @@
   (`.list-item`, `.chip`, `.tab`, `.btn`, `.icon-btn`, `.section-title`, `.empty-state`, `.spinner`, `.progress-bar`).
 - **Ikon:** tambahkan path Material Icons ke `components/Icon.tsx`; jangan menyebar SVG inline.
 - **Bahasa UI:** label campuran mengikuti Mihon (judul layar Inggris: Library/Updates/…), pesan & aksi Bahasa Indonesia.
+- **Service worker** (`public/sw.js`): jangan cache `/api/graphql`; ubah strategi → naikkan `VERSION`. Gambar baru
+  dari server otomatis ter-cache bila URL-nya cocok `route()` — tidak perlu kode tambahan di komponen.
 - Gambar sumber bisa gagal (CDN 404/522) — `onError` sembunyikan gambar, tampilkan placeholder.
 
 ## WebUI — verifikasi

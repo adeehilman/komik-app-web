@@ -43,6 +43,14 @@ daripada README/GitHub `master`. Semua query divalidasi ke skema (lihat `nodes/g
 Env `UPDATE_*` / `AUTO_DOWNLOAD_*` **menimpa** setelan tiap container start, sehingga perubahan dari UI hilang.
 → Jangan tambahkan env tersebut ke compose.
 
+### D-13 Service worker untuk cache gambar & app shell (2026-10-01, pemilik)
+Gambar halaman 700–900 KB (±20 MB/chapter) lewat upload rumah + 4G adalah bottleneck utama; server mengirim
+`Cache-Control: max-age=0` untuk file app dan cache Safari bisa dikosongkan iOS kapan saja.
+→ `webui/public/sw.js` (vanilla, tanpa library): app shell network-first (hashed asset cache-first), halaman chapter /
+cover / ikon cache-first dengan batas umur & jumlah. **Tidak** meng-cache GraphQL (bukan offline mode penuh).
+Web app Home Screen dikecualikan dari penghapusan storage 7 hari Safari, tapi iOS tetap bisa mengosongkan bila
+storage perangkat penuh. Spesifikasi: `tasks/W-15-service-worker-cache.md`. **Terverifikasi di iPhone (2026-10-01).**
+
 ### D-12 Status bar `black-translucent` + koreksi `--vh-gap` (2026-10-01, pemilik) — menggantikan D-11
 Pemilik ingin konten sampai ke belakang jam/baterai dan terlihat di belakang bottom nav (seperti Instagram).
 Bug viewport D-11 dikoreksi dengan `src/viewportFix.ts` → CSS variable `--vh-gap` untuk semua elemen bawah;

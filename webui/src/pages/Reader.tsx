@@ -123,7 +123,7 @@ function Reader({ chapterId }: { chapterId: number }) {
         .prefetchQuery({ queryKey: ['chapterPages', next.id], queryFn: () => fetchChapterPages(next.id), staleTime: Infinity })
         .then(() => {
           const nextPages = queryClient.getQueryData<string[]>(['chapterPages', next.id])
-          nextPages?.slice(0, 2).forEach(preloadImage)
+          nextPages?.slice(0, 6).forEach(preloadImage)
         })
     }
   }, [index, total, pageList, next, queryClient])

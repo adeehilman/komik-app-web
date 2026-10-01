@@ -65,5 +65,6 @@ Container `suwayomi`  (ghcr.io/suwayomi/suwayomi-server:latest, restart: unless-
 
 ## Non-goals
 
-Multi-user/RBAC, high availability, monitoring stack, aplikasi mobile native, offline mode / service worker,
+Multi-user/RBAC, high availability, monitoring stack, aplikasi mobile native, offline mode penuh (service worker
+hanya untuk cache gambar & app shell — D-13),
 push notification, i18n, tema terang, menyalin kode Mihon (Kotlin) atau Suwayomi-WebUI (MPL-2.0).

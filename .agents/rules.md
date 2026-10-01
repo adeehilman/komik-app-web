@@ -25,7 +25,9 @@ Keputusan arsitektur ada di `decisions.md` dan sudah dikunci. Kalau menurutmu ad
 - CI/CD, GitHub Actions, pre-commit hook, test framework, linter tambahan (oxlint bawaan template boleh).
 - Database eksternal; service kedua di `docker-compose.yml`.
 - Dependency WebUI di luar stack terkunci (`decisions.md` D-06): Apollo, codegen, MUI/Tailwind/shadcn, Redux/Zustand.
-- Service worker, offline mode, push notification, i18n, tema terang.
+- Push notification, i18n, tema terang, offline mode penuh (cache data GraphQL).
+- Service worker **hanya** `webui/public/sw.js` sesuai D-13 (cache app shell + gambar). Jangan pakai Workbox/library;
+  jangan cache request GraphQL (`/api/graphql`).
 - Auth/login di frontend.
 - Env `UPDATE_*` / `AUTO_DOWNLOAD_*` di compose (menimpa setelan UI tiap restart).
 - Port forwarding, `tailscale funnel`, bind `0.0.0.0` untuk port 4567.

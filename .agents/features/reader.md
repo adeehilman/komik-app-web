@@ -34,9 +34,9 @@
 
 ## Preload (meniru Mihon `HttpPageLoader`)
 
-- 4 gambar ke depan via `new Image()` (`PRELOAD_AHEAD = 4`, maks 24 in-flight).
-- Sisa ≤ 3 halaman → `prefetchQuery(['chapterPages', next.id])` + 2 gambar pertama chapter berikutnya.
-- Cache = cache HTTP browser. Tidak ada service worker (di luar scope).
+- 6 gambar ke depan via `new Image()` (`PRELOAD_AHEAD = 6`, maks 24 in-flight).
+- Sisa ≤ 3 halaman → `prefetchQuery(['chapterPages', next.id])` + 6 gambar pertama chapter berikutnya.
+- Cache = service worker `public/sw.js` (W-15): halaman yang pernah dimuat/di-preload disimpan di iPhone ±30 hari.
 
 ## Menu & setelan
 
