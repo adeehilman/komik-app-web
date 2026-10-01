@@ -43,6 +43,11 @@ daripada README/GitHub `master`. Semua query divalidasi ke skema (lihat `nodes/g
 Env `UPDATE_*` / `AUTO_DOWNLOAD_*` **menimpa** setelan tiap container start, sehingga perubahan dari UI hilang.
 → Jangan tambahkan env tersebut ke compose.
 
+### D-11 Status bar PWA `black`, bukan `black-translucent` (2026-10-01)
+Bug WebKit: pada web app Home Screen dengan `black-translucent`, viewport kurang setinggi status bar → bottom nav
+melayang 47pt dari tepi bawah. Dengan `black`, konten mulai di bawah status bar dan semua elemen `bottom: 0` menempel.
+Konsekuensi: status bar hitam pekat (`#000`). Diuji di iPhone 13 Pro.
+
 ### D-10 Dua lapis backup (2026-10-01)
 `.tachibk` (data logis; harian otomatis di server + manual dari UI) dan `scripts/backup.sh`
 (arsip `./data` utuh, 7 terakhir).

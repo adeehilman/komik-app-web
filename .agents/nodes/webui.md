@@ -74,7 +74,12 @@ HashRouter dipakai karena server menyajikan file statis tanpa fallback SPA.
   riwayat: navigasi baru mulai di atas, tombol kembali memulihkan posisi.
 - `.app.with-nav` memberi ruang bawah untuk bottom nav + `safe-area-inset-bottom`.
 - Reader `position: fixed; inset: 0; z-index: 1200` di atas semuanya.
-- Status bar `black-translucent`: konten berada di bawah status bar, jadi top bar wajib `safe-area-inset-top`.
+- Status bar PWA = **`black`** (`index.html`, sejak 2026-10-01). **Jangan** kembali ke `black-translucent`: di iOS
+  standalone mode itu tinggi viewport berkurang sebesar tinggi status bar (47pt di iPhone 13 Pro), sehingga
+  `bottom: 0` (bottom nav, action bar, FAB, reader) melayang di atas tepi layar. Terverifikasi di iPhone.
+- Tetap pakai `env(safe-area-inset-*)` untuk semua padding tepi (atas jadi 0 dengan status bar `black`;
+  bawah = area home indicator 34pt yang memang tidak bisa dipakai).
+- Mengubah meta status bar baru berlaku setelah ikon Home Screen dihapus dan ditambahkan ulang.
 
 ## Build & deploy
 

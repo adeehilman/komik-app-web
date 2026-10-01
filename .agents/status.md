@@ -20,12 +20,12 @@ dan uji API ujung-ke-ujung. Yang tersisa adalah uji yang butuh manusia/perangkat
 | `scripts/backup.sh` | arsip 91 MB / 1600 file, server nyala lagi |
 | Restore | ekstrak arsip → server kedua di port 4568 boot dari data hasil restore, data utuh |
 | Restart container | `docker compose restart` → 200, `restart: unless-stopped` |
+| Bottom nav menempel ke tepi bawah di PWA iPhone (W-13, status bar `black`) | screenshot iPhone: warna nav menerus sampai tepi layar, pita 47pt hilang |
 | Prasyarat reboot | Docker Desktop `AutoStart: true` + terdaftar di startup Windows |
 
 ## Menunggu manusia
 
-- [ ] **Uji di iPhone (W-10):** Safari → `https://<tailnet-host>.ts.net` → Share → Add to Home Screen → buka dari ikon
-      (tanpa bar Safari, bottom nav tidak tertutup home indicator).
+- [x] Add to Home Screen → buka dari ikon: tanpa bar Safari, bottom nav menempel ke bawah (W-13).
 - [ ] Library: ganti 4 mode tampilan, filter tri-state, sort, tekan lama 2 manga → aksi.
 - [ ] Browse → source → cari → buka judul → Tambah ke library.
 - [ ] Baca 1 chapter sampai akhir (RTL & webtoon) → keluar → buka lagi → lanjut di halaman terakhir.
