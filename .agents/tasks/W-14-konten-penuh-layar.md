@@ -1,6 +1,6 @@
 # W-14 — Konten sampai belakang status bar & belakang bottom nav (iPhone PWA)
 
-Status: **ter-deploy, diverifikasi senior; uji iPhone menunggu** · Penulis: senior · 2026-10-01 · Eksekutor: Gemini Flash (`agy`)
+Status: **selesai, disetujui pemilik** (catatan: `viewportFix.ts` kemudian diganti senior ke metode probe — lihat `nodes/webui.md`) · Penulis: senior · 2026-10-01 · Eksekutor: Gemini Flash (`agy`)
 
 ## Tujuan (hanya dua, sisanya jangan diubah)
 

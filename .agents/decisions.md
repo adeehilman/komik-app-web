@@ -47,7 +47,8 @@ Env `UPDATE_*` / `AUTO_DOWNLOAD_*` **menimpa** setelan tiap container start, seh
 Pemilik ingin konten sampai ke belakang jam/baterai dan terlihat di belakang bottom nav (seperti Instagram).
 Bug viewport D-11 dikoreksi dengan `src/viewportFix.ts` → CSS variable `--vh-gap` untuk semua elemen bawah;
 bottom nav semi-transparan + blur. Konsekuensi: teks status bar selalu putih (tidak terbaca di atas panel putih).
-Rollback: meta kembali ke `black`. Status: ter-deploy, **uji iPhone menunggu** (`status.md`).
+Rollback: meta kembali ke `black`. Deteksi bug memakai probe elemen `fixed`, bukan `innerHeight` (bug tidak konsisten).
+Status: **terverifikasi di iPhone 13 Pro** (2026-10-01).
 
 ### D-11 Status bar PWA `black`, bukan `black-translucent` (2026-10-01) — *diganti D-12*
 Bug WebKit: pada web app Home Screen dengan `black-translucent`, viewport kurang setinggi status bar → bottom nav
