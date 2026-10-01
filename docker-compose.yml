@@ -1,0 +1,14 @@
+services:
+  suwayomi:
+    image: ghcr.io/suwayomi/suwayomi-server:latest
+    container_name: suwayomi
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:4567:4567"
+    volumes:
+      - ./webui/dist:/home/suwayomi/.local/share/Tachidesk/webUI:ro   # WebUI Mihon-style (.agents/nodes/webui.md), sebelum mount data
+      - ./data:/home/suwayomi/.local/share/Tachidesk
+    environment:
+      TZ: ${TZ:-Asia/Jakarta}
+      AUTH_MODE: none   # akses dibatasi Tailscale (tailnet only), lihat .agents/nodes/access.md
+      WEB_UI_FLAVOR: Custom   # rollback: hapus baris ini + mount webui/dist, lalu docker compose up -d

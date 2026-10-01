@@ -1,0 +1,50 @@
+.entry-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 72px;
+  padding: 8px 4px 8px 16px;
+}
+
+.entry-row.dimmed .entry-text {
+  opacity: 0.45;
+}
+
+.entry-cover {
+  width: 40px;
+  flex-shrink: 0;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border-radius: 4px;
+  background-color: var(--surface-variant);
+}
+
+.entry-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.entry-text {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.entry-title,
+.entry-subtitle {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.entry-title {
+  font-size: 15px;
+}
+
+.entry-subtitle {
+  font-size: 13px;
+  color: var(--on-surface-variant);
+}

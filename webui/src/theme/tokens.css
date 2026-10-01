@@ -1,0 +1,26 @@
+:root {
+  --primary: #B0C6FF;            --on-primary: #002D6E;
+  --primary-container: #00429B;  --on-primary-container: #D9E2FF;
+  --secondary: #B0C6FF;          --on-secondary: #002D6E;      /* badge unread */
+  --secondary-container: #00429B;                              /* pill nav terpilih */
+  --tertiary: #7ADC77;           --on-tertiary: #003909;       /* badge downloaded */
+  --background: #1B1B1F;         --on-background: #E3E2E6;
+  --surface: #1B1B1F;            --on-surface: #E3E2E6;
+  --surface-variant: #211F26;    --on-surface-variant: #C5C6D0; /* bottom nav */
+  --error: #FFB4AB;              --outline: #8F9099;  --outline-variant: #44464F;
+  --surface-container-low: #1E1C22;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--on-background);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

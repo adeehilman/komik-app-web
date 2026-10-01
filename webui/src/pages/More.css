@@ -1,0 +1,45 @@
+.more-logo {
+  display: flex;
+  justify-content: center;
+  padding: 24px 0 32px;
+}
+
+.more-logo-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background-color: var(--primary);
+  color: var(--on-primary);
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.backup-note {
+  padding: 0 16px 8px;
+}
+
+.backup-warning {
+  margin-top: 8px;
+  color: var(--error);
+}
+
+.backup-status {
+  padding: 8px 0;
+}
+
+.file-input {
+  max-width: 45%;
+  font-size: 13px;
+}
+
+.link {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+.dialog-body ul {
+  margin: 4px 0 8px 20px;
+}

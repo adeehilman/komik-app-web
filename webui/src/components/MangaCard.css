@@ -1,0 +1,174 @@
+.manga-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: 8px;
+  padding: 8px;
+}
+
+.manga-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-radius: 8px;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.card-cover {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border-radius: 8px;
+  background-color: var(--surface-variant);
+}
+
+.card-cover img,
+.card-cover-placeholder {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.card-cover.dimmed img {
+  opacity: 0.35;
+}
+
+.card.selected .card-cover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 3px solid var(--primary);
+  border-radius: 8px;
+  background-color: rgba(176, 198, 255, 0.28);
+}
+
+/* Badge kiri atas (unread / downloaded / bahasa) */
+.card-badges {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  display: flex;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.badge {
+  padding: 2px 5px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.badge-unread {
+  background-color: var(--secondary);
+  color: var(--on-secondary);
+}
+
+.badge-downloaded {
+  background-color: var(--tertiary);
+  color: var(--on-tertiary);
+}
+
+.badge-lang,
+.badge-plain {
+  background-color: var(--surface-variant);
+  color: var(--on-surface-variant);
+}
+
+/* Compact: judul di atas gradasi gelap */
+.card-compact-title {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 28px 6px 6px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.75), transparent);
+}
+
+.card-compact-title span,
+.card-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.card-compact-title span {
+  color: #fff;
+}
+
+.card-title {
+  padding: 4px 2px 2px;
+  color: var(--on-surface);
+}
+
+.card-continue {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background-color: var(--primary-container);
+  color: var(--on-primary-container);
+  opacity: 0.9;
+}
+
+.card-compact .card-continue {
+  bottom: auto;
+  top: 4px;
+  right: 4px;
+}
+
+/* List: cover kecil + judul + badge di kanan */
+.card-list {
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 16px;
+  border-radius: 0;
+}
+
+.card-list .card-cover {
+  width: 40px;
+  flex-shrink: 0;
+  border-radius: 4px;
+}
+
+.card-list .card-badges {
+  position: static;
+}
+
+.card-list.card {
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+}
+
+.card-list-title {
+  overflow: hidden;
+  font-size: 15px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.card-list.selected {
+  background-color: var(--secondary-container);
+}
+
+.card-list.selected .card-cover::after {
+  display: none;
+}

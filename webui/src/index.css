@@ -1,0 +1,443 @@
+html,
+body,
+#root {
+  height: 100dvh;
+  margin: 0;
+  padding: 0;
+  overscroll-behavior: none;
+  background-color: var(--background);
+  color: var(--on-background);
+}
+
+/* #root adalah kontainer scroll utama (dipakai pull-to-refresh & simpan posisi scroll). */
+#root {
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+body {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+}
+
+/* ---------- Tombol ---------- */
+
+.icon-btn {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--on-surface-variant);
+}
+
+.icon-btn:active {
+  background-color: var(--surface-variant);
+}
+
+.icon-btn.active {
+  color: var(--primary);
+}
+
+.icon-btn:disabled {
+  opacity: 0.38;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 20px;
+  border: none;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  background-color: var(--primary);
+  color: var(--on-primary);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+}
+
+.btn-tonal {
+  background-color: var(--secondary-container);
+  color: var(--on-primary-container);
+}
+
+.btn-text {
+  background: none;
+  color: var(--primary);
+  padding: 0 12px;
+}
+
+.btn-danger {
+  background-color: var(--error);
+  color: #690005;
+}
+
+/* ---------- Baris daftar / setelan ---------- */
+
+.section-title {
+  padding: 16px 16px 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--primary);
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  min-height: 56px;
+  padding: 8px 16px;
+  border: none;
+  background: none;
+  text-align: left;
+  color: var(--on-surface);
+}
+
+.list-item:active {
+  background-color: var(--surface-variant);
+}
+
+.list-item-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.list-item-title {
+  font-size: 16px;
+}
+
+.list-item-subtitle {
+  font-size: 13px;
+  color: var(--on-surface-variant);
+}
+
+.list-item-icon {
+  display: flex;
+  color: var(--primary);
+}
+
+.list-item input[type='checkbox'],
+.list-item input[type='radio'] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--primary);
+}
+
+.list-item select {
+  padding: 6px 8px;
+  border: 1px solid var(--outline);
+  border-radius: 8px;
+  background-color: var(--surface);
+}
+
+/* ---------- Chip ---------- */
+
+.chip-row {
+  display: flex;
+  gap: 8px;
+  padding: 8px 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.chip-row::-webkit-scrollbar {
+  display: none;
+}
+
+.chip {
+  flex-shrink: 0;
+  height: 32px;
+  padding: 0 14px;
+  border: 1px solid var(--outline-variant);
+  border-radius: 8px;
+  background: none;
+  font-size: 14px;
+  color: var(--on-surface-variant);
+}
+
+.chip.active {
+  border-color: transparent;
+  background-color: var(--secondary-container);
+  color: var(--on-primary-container);
+}
+
+/* ---------- Tab ---------- */
+
+.tabs {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-bottom: 1px solid var(--outline-variant);
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  flex: 1 0 auto;
+  min-width: 72px;
+  height: 48px;
+  padding: 0 16px;
+  border: none;
+  border-bottom: 3px solid transparent;
+  background: none;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--on-surface-variant);
+}
+
+.tab.active {
+  border-bottom-color: var(--primary);
+  color: var(--primary);
+}
+
+.tab-count {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-size: 11px;
+  background-color: var(--surface-variant);
+}
+
+/* ---------- Status ---------- */
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 96px 32px;
+  text-align: center;
+  color: var(--on-surface-variant);
+}
+
+.empty-face {
+  font-size: 48px;
+  user-select: none;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  margin: 48px auto;
+  border: 3px solid var(--surface-variant);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.progress-bar {
+  height: 4px;
+  overflow: hidden;
+  background-color: var(--surface-variant);
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background-color: var(--primary);
+  transition: width 0.3s;
+}
+
+.progress-bar.indeterminate .progress-bar-fill {
+  width: 30%;
+  animation: indeterminate 1.2s ease-in-out infinite;
+}
+
+@keyframes indeterminate {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(400%);
+  }
+}
+
+.error-text {
+  padding: 16px;
+  color: var(--error);
+  font-size: 14px;
+}
+
+.load-more {
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+}
+
+/* ---------- Update library & pull-to-refresh ---------- */
+
+.update-bar-text {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px 0 16px;
+  font-size: 13px;
+  color: var(--on-surface-variant);
+}
+
+.pull-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-size: 24px;
+  color: var(--primary);
+}
+
+/* ---------- Menu dropdown (⋮) ---------- */
+
+.menu-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 1500;
+}
+
+.menu {
+  position: fixed;
+  top: calc(52px + env(safe-area-inset-top, 0px));
+  right: 8px;
+  z-index: 1501;
+  min-width: 200px;
+  padding: 8px 0;
+  border-radius: 8px;
+  background-color: var(--surface-container-low);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+.menu-item {
+  display: block;
+  width: 100%;
+  padding: 14px 16px;
+  border: none;
+  background: none;
+  text-align: left;
+  font-size: 15px;
+}
+
+.menu-item:active {
+  background-color: var(--surface-variant);
+}
+
+/* ---------- Kontrol setelan ---------- */
+
+.tristate {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--on-surface-variant);
+  border-radius: 3px;
+}
+
+.tristate-only {
+  border-color: var(--primary);
+  background-color: var(--primary);
+  color: var(--on-primary);
+}
+
+.tristate-exclude {
+  border-color: var(--error);
+  background-color: var(--error);
+  color: #690005;
+}
+
+.sort-arrow {
+  display: inline-flex;
+  justify-content: center;
+  width: 20px;
+  font-size: 18px;
+  color: var(--primary);
+}
+
+.chip-row.wrap {
+  flex-wrap: wrap;
+}
+
+.range {
+  width: 140px;
+  accent-color: var(--primary);
+}
+
+/* Bar aksi pilih-banyak menimpa bottom nav (seperti Mihon). */
+.action-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1100;
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 8px calc(8px + env(safe-area-inset-bottom, 0px));
+  border-radius: 16px 16px 0 0;
+  background-color: var(--surface-variant);
+}
+
+.action-bar button {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 0;
+  border: none;
+  background: none;
+  font-size: 11px;
+  color: var(--on-surface-variant);
+}
+
+.action-bar button:disabled {
+  opacity: 0.4;
+}
+
+/* ---------- Kerangka aplikasi ---------- */
+
+.app.with-nav {
+  padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+}
