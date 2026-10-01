@@ -25,6 +25,7 @@ export interface SettingsSchema {
   mihonweb_library_random_seed: number // urutan "random" stabil sampai diacak ulang (W-04b)
   mihonweb_browse_langs: string // bahasa extension yang ditampilkan, dipisah koma (W-05)
   mihonweb_updates_last_seen: number // detik epoch; badge chapter baru di tab Updates (W-12)
+  mihonweb_reader_preload_all: boolean // muat seluruh halaman chapter yang dibuka (W-16)
 }
 
 export type SettingKey = keyof SettingsSchema
@@ -55,6 +56,7 @@ export const SETTINGS_DEFAULTS: SettingsSchema = {
   mihonweb_library_random_seed: 1,
   mihonweb_browse_langs: 'all,id,en',
   mihonweb_updates_last_seen: 0,
+  mihonweb_reader_preload_all: true,
 }
 
 export const META_PREFIX = 'mihonweb_'

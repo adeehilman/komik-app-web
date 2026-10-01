@@ -21,6 +21,7 @@ dan uji API ujung-ke-ujung. Yang tersisa adalah uji yang butuh manusia/perangkat
 | Restore | ekstrak arsip → server kedua di port 4568 boot dari data hasil restore, data utuh |
 | Restart container | `docker compose restart` → 200, `restart: unless-stopped` |
 | Bottom nav menempel ke tepi bawah di PWA iPhone (W-13, status bar `black`) | screenshot iPhone: warna nav menerus sampai tepi layar, pita 47pt hilang |
+| W-16 muat seluruh chapter (3 paralel, retry, lanjut saat online) | file identik spesifikasi, simulasi logika lulus, disetujui pemilik setelah uji iPhone |
 | W-15 service worker: cache halaman/cover/ikon/app shell di iPhone, preload 6 | review senior (file identik spesifikasi, `sw.js` `text/javascript`, routing 10/10) + disetujui pemilik setelah uji iPhone |
 | W-14 status bar tembus + `--vh-gap` (probe `fixed`) + nav blur | disetujui pemilik setelah uji iPhone (perbaikan kedua: probe, bukan `innerHeight`) |
 | Prasyarat reboot | Docker Desktop `AutoStart: true` + terdaftar di startup Windows |

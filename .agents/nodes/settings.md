@@ -32,6 +32,7 @@ Saat ini hanya dipakai untuk `mihonweb_reader_mode` (Reader: "Berlaku untuk judu
 | `mihonweb_reader_tap_zones` | bool | `true` | navigasi tap |
 | `mihonweb_reader_fit` | `width` `height` `screen` | `screen` | scale type (mode paged) |
 | `mihonweb_reader_bg` | `black` `gray` `white` | `black` | warna latar reader |
+| `mihonweb_reader_preload_all` | bool | `true` | muat seluruh halaman chapter yang dibuka (W-16) |
 | `mihonweb_reader_webtoon_gap` | 0–32 (px, langkah 4) | `0` | padding webtoon |
 | `mihonweb_library_display` | `compact` `comfortable` `cover_only` `list` | `compact` | `LibraryDisplayMode` |
 | `mihonweb_library_columns_portrait` | 0 (otomatis)–6 | `0` | `portraitColumns` |

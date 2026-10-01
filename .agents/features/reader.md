@@ -34,7 +34,11 @@
 
 ## Preload (meniru Mihon `HttpPageLoader`)
 
-- 6 gambar ke depan via `new Image()` (`PRELOAD_AHEAD = 6`, maks 24 in-flight).
+- **Muat seluruh chapter** (W-16, setelan `mihonweb_reader_preload_all`, default nyala): `reader/useChapterPreloader.ts`
+  mengunduh semua halaman chapter yang dibuka via `fetch` (masuk cache service worker), urutan dari `startIndex + 1`
+  sampai akhir lalu sisanya, 3 sekaligus, coba ulang 1/3/8 detik, antre ulang saat event `online`. Garis progres 2px
+  (`.reader-preload-bar`) + "dimuat x/y · n gagal" di menu. Saat aktif, `preloadAround()` dimatikan (hindari unduh dobel).
+- Bila muat-seluruh mati: 6 gambar ke depan via `new Image()` (`PRELOAD_AHEAD = 6`, maks 24 in-flight).
 - Sisa ≤ 3 halaman → `prefetchQuery(['chapterPages', next.id])` + 6 gambar pertama chapter berikutnya.
 - Cache = service worker `public/sw.js` (W-15): halaman yang pernah dimuat/di-preload disimpan di iPhone ±30 hari.
 

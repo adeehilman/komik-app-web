@@ -10,4 +10,4 @@ Ditulis oleh pemilik/senior di akhir sesi (agent eksekutor read-only).
 
 | Tanggal | Topik |
 |---|---|
-| [2026-10-01](2026-10-01.md) | Review kerja agent, WebUI W-05..W-12, deploy, backup/restore, migrasi ke `.agents/`, W-13 status bar iPhone, recap & tasks, W-14 konten penuh layar, performa, W-15 service worker |
+| [2026-10-01](2026-10-01.md) | Review kerja agent, WebUI W-05..W-12, deploy, backup/restore, migrasi ke `.agents/`, W-13 status bar iPhone, recap & tasks, W-14 konten penuh layar, performa, W-15 service worker, W-16 muat seluruh chapter |

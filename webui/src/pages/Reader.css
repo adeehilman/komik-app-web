@@ -211,3 +211,21 @@
   flex: 1;
   accent-color: var(--primary);
 }
+
+/* Garis progres muat seluruh chapter (W-16) */
+.reader-preload-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  height: 2px;
+  background-color: rgba(255, 255, 255, 0.12);
+  pointer-events: none;
+}
+
+.reader-preload-bar > div {
+  height: 100%;
+  background-color: var(--primary);
+  transition: width 0.3s;
+}

@@ -10,6 +10,7 @@ import { PagedViewer } from '../reader/PagedViewer'
 import { WebtoonViewer } from '../reader/WebtoonViewer'
 import type { WebtoonHandle } from '../reader/WebtoonViewer'
 import { NEXT_CHAPTER_THRESHOLD, preloadAround, preloadImage } from '../reader/preload'
+import { useChapterPreloader } from '../reader/useChapterPreloader'
 import './Reader.css'
 
 type ReaderMode = SettingsSchema['mihonweb_reader_mode']
@@ -62,6 +63,7 @@ function Reader({ chapterId }: { chapterId: number }) {
   const [bg, setBg] = useSetting('mihonweb_reader_bg')
   const [tapZones, setTapZones] = useSetting('mihonweb_reader_tap_zones')
   const [gap, setGap] = useSetting('mihonweb_reader_webtoon_gap')
+  const [preloadAll, setPreloadAll] = useSetting('mihonweb_reader_preload_all')
 
   const [index, setIndex] = useState<number | null>(null)
   /** Halaman awal saat chapter dibuka; dibekukan supaya webtoon tidak melompat saat digulir. */
@@ -117,7 +119,7 @@ function Reader({ chapterId }: { chapterId: number }) {
   /* ---------- Preload ---------- */
   useEffect(() => {
     if (index === null || total === 0) return
-    preloadAround(pageList, index)
+    if (!preloadAll) preloadAround(pageList, index)
     if (next && total - index <= NEXT_CHAPTER_THRESHOLD) {
       queryClient
         .prefetchQuery({ queryKey: ['chapterPages', next.id], queryFn: () => fetchChapterPages(next.id), staleTime: Infinity })
@@ -126,7 +128,11 @@ function Reader({ chapterId }: { chapterId: number }) {
           nextPages?.slice(0, 6).forEach(preloadImage)
         })
     }
-  }, [index, total, pageList, next, queryClient])
+  }, [index, total, pageList, next, queryClient, preloadAll])
+
+  /* ---------- Muat seluruh chapter (W-16) ---------- */
+  const preload = useChapterPreloader(pageList, startIndex + 1, preloadAll && index !== null)
+  const preloading = preloadAll && preload.total > 0 && preload.loaded + preload.failed < preload.total
 
   /* ---------- Navigasi ---------- */
   const goChapter = useCallback(
@@ -233,6 +239,12 @@ function Reader({ chapterId }: { chapterId: number }) {
           />
         ))}
 
+      {preloading && (
+        <div className="reader-preload-bar" aria-hidden="true">
+          <div style={{ width: `${(preload.loaded / preload.total) * 100}%` }} />
+        </div>
+      )}
+
       {menu && (
         <>
           <div className="reader-topbar">
@@ -246,7 +258,11 @@ function Reader({ chapterId }: { chapterId: number }) {
             </button>
             <div className="reader-titles">
               <span className="reader-manga">{chapter.data?.manga.title}</span>
-              <span className="reader-chapter">{chapter.data?.name}</span>
+              <span className="reader-chapter">
+                {chapter.data?.name}
+                {preloadAll && preload.total > 0 && ` · dimuat ${preload.loaded}/${preload.total}`}
+                {preload.failed > 0 && ` · ${preload.failed} gagal`}
+              </span>
             </div>
             <button type="button" className="icon-btn" aria-label="Setelan" onClick={() => setSettingsOpen(true)}>
               <Icon name="settings" />
@@ -350,6 +366,14 @@ function Reader({ chapterId }: { chapterId: number }) {
           <span className="list-item-text">
             <span className="list-item-title">Navigasi tap</span>
             <span className="list-item-subtitle">Tap tepi layar untuk pindah halaman</span>
+          </span>
+        </label>
+
+        <label className="list-item">
+          <input type="checkbox" checked={preloadAll} onChange={(e) => setPreloadAll(e.target.checked)} />
+          <span className="list-item-text">
+            <span className="list-item-title">Muat seluruh chapter</span>
+            <span className="list-item-subtitle">Semua halaman diunduh saat chapter dibuka (±20 MB per chapter)</span>
           </span>
         </label>
       </Sheet>
