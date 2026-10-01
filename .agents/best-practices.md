@@ -20,6 +20,8 @@
   long-press harus `stopPropagation` + `preventDefault` di `onClick` dan `stopPropagation` di `onTouchStart`.
 - **Scroll container = `#root`**, bukan `window`. Pull-to-refresh & pemulihan posisi scroll bergantung pada ini.
   Layar penuh (Reader) memakai `position: fixed` dengan scroll sendiri.
+- **Elemen menempel bawah (`position: fixed`)** wajib `bottom: calc(-1 * var(--vh-gap, 0px))`; tinggi layar penuh
+  `calc(100dvh + var(--vh-gap, 0px))`. Tanpa ini elemen melayang 47pt di PWA iPhone (`nodes/webui.md`, D-12).
 - **Safe area iPhone:** top bar `padding-top: env(safe-area-inset-top)`, elemen bawah
   `env(safe-area-inset-bottom)`. Input teks ≥ 16px agar iOS tidak auto-zoom.
 - **Warna hanya dari token** `src/theme/tokens.css` (palet dark Mihon). Kelas umum ada di `src/index.css`

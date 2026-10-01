@@ -51,6 +51,8 @@ Keputusan arsitektur ada di `decisions.md` dan sudah dikunci. Kalau menurutmu ad
 
 ## 6. Protokol per task
 
+0. **Percakapan/sesi baru:** baca `.agents/README.md` → recap terbaru di `.agents/recap/` → `status.md`.
+   Setelah itu hanya file `.agents/` yang relevan dengan task (tabel node/fitur di `.agents/README.md`).
 1. Baca task + Definition of Done-nya.
 2. Baca node/fitur terkait di `.agents/`.
 3. Kerjakan.

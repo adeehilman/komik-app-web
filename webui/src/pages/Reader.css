@@ -1,6 +1,6 @@
 .reader {
   position: fixed;
-  inset: 0;
+  inset: 0 0 calc(-1 * var(--vh-gap, 0px)) 0;
   z-index: 1200;
   overflow: hidden;
   color: #e3e2e6;
@@ -77,7 +77,7 @@
 
 .fit-screen .paged-page img {
   max-width: 100vw;
-  max-height: 100dvh;
+  max-height: calc(100dvh + var(--vh-gap, 0px));
   object-fit: contain;
 }
 
@@ -96,7 +96,7 @@
 
 .fit-height .paged-page img {
   width: auto;
-  height: 100dvh;
+  height: calc(100dvh + var(--vh-gap, 0px));
 }
 
 /* Webtoon */

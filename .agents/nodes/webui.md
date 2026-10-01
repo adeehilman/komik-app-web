@@ -15,7 +15,8 @@ webui/
 ├── index.html              meta iOS PWA (viewport-fit=cover, apple-mobile-web-app-*), manifest, ikon
 ├── public/                 manifest.webmanifest (standalone, #1B1B1F), icon-180/192/512.png
 └── src/
-    ├── main.tsx            mount React + index.css
+    ├── main.tsx            mount React + index.css + installViewportFix()
+    ├── viewportFix.ts      koreksi bug viewport iOS → CSS variable --vh-gap (lihat Tata letak & iOS)
     ├── App.tsx             QueryClient, HashRouter, routes, bottom nav, pemulihan scroll
     ├── index.css           reset + kelas UI bersama (list-item, chip, tab, btn, sheet, progress, action-bar…)
     ├── theme/tokens.css    palet dark Mihon (Apache-2.0) sebagai CSS variables
@@ -70,16 +71,28 @@ HashRouter dipakai karena server menyajikan file statis tanpa fallback SPA.
 
 ## Tata letak & iOS
 
-- `#root` = kontainer scroll (`height: 100dvh; overflow-y: auto`). `App` menyimpan posisi scroll per entri
+- `#root` = kontainer scroll (`height: calc(100dvh + var(--vh-gap, 0px)); overflow-y: auto`). `App` menyimpan posisi scroll per entri
   riwayat: navigasi baru mulai di atas, tombol kembali memulihkan posisi.
 - `.app.with-nav` memberi ruang bawah untuk bottom nav + `safe-area-inset-bottom`.
-- Reader `position: fixed; inset: 0; z-index: 1200` di atas semuanya.
-- Status bar PWA = **`black`** (`index.html`, sejak 2026-10-01). **Jangan** kembali ke `black-translucent`: di iOS
-  standalone mode itu tinggi viewport berkurang sebesar tinggi status bar (47pt di iPhone 13 Pro), sehingga
-  `bottom: 0` (bottom nav, action bar, FAB, reader) melayang di atas tepi layar. Terverifikasi di iPhone.
-- Tetap pakai `env(safe-area-inset-*)` untuk semua padding tepi (atas jadi 0 dengan status bar `black`;
-  bawah = area home indicator 34pt yang memang tidak bisa dipakai).
+- Reader `position: fixed; z-index: 1200` di atas semuanya, sampai tepi bawah layar (lihat `--vh-gap`).
+- **Status bar PWA = `black-translucent`** (W-14, D-12): konten tampil sampai ke belakang jam & baterai.
+  Teks status bar selalu putih (tidak bisa mengikuti warna konten — batasan web app iOS).
+- **Koreksi `--vh-gap` (`src/viewportFix.ts`, dipanggil di `main.tsx`):** bug WebKit — di PWA standalone dengan
+  `black-translucent`, `innerHeight` kurang setinggi status bar (47pt di iPhone 13 Pro). Selisih
+  `tinggi layar − innerHeight` disimpan di CSS variable `--vh-gap` (0 di browser biasa, di status bar `black`,
+  atau bila selisih > 100px). Dihitung ulang saat `resize`/`orientationchange`.
+- **Aturan wajib:** setiap elemen `position: fixed` yang menempel ke bawah memakai
+  `bottom: calc(-1 * var(--vh-gap, 0px))` (atau `inset: 0 0 calc(-1 * var(--vh-gap, 0px)) 0`), dan tinggi berbasis
+  `100dvh` ditulis `calc(100dvh + var(--vh-gap, 0px))`. Pemakai saat ini: `html/body/#root` & `.action-bar`
+  (`index.css`), `.bottom-nav`, `.sheet-backdrop/.dialog-backdrop` (`Sheet.css`), `.fab` (`Manga.css`),
+  `.reader` & gambar `fit-screen`/`fit-height` (`Reader.css`).
+- **Bottom nav semi-transparan** (`rgba(33,31,38,0.82)` + `backdrop-filter: blur(16px) saturate(140%)`): isi halaman
+  terlihat samar di belakangnya.
+- Tetap pakai `env(safe-area-inset-*)` untuk semua padding tepi (atas = tinggi status bar; bawah = area home
+  indicator 34pt yang memang tidak bisa dipakai). Top bar wajib `padding-top: env(safe-area-inset-top)`.
 - Mengubah meta status bar baru berlaku setelah ikon Home Screen dihapus dan ditambahkan ulang.
+- **Rollback W-14:** ganti meta ke `content="black"` → build → `docker compose restart` → tambah ulang ikon.
+  `--vh-gap` otomatis 0; CSS lain boleh tetap.
 
 ## Build & deploy
 

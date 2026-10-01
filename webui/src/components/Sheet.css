@@ -1,7 +1,7 @@
 .sheet-backdrop,
 .dialog-backdrop {
   position: fixed;
-  inset: 0;
+  inset: 0 0 calc(-1 * var(--vh-gap, 0px)) 0;
   z-index: 2000;
   display: flex;
   background-color: rgba(0, 0, 0, 0.55);

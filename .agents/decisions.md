@@ -43,7 +43,13 @@ daripada README/GitHub `master`. Semua query divalidasi ke skema (lihat `nodes/g
 Env `UPDATE_*` / `AUTO_DOWNLOAD_*` **menimpa** setelan tiap container start, sehingga perubahan dari UI hilang.
 → Jangan tambahkan env tersebut ke compose.
 
-### D-11 Status bar PWA `black`, bukan `black-translucent` (2026-10-01)
+### D-12 Status bar `black-translucent` + koreksi `--vh-gap` (2026-10-01, pemilik) — menggantikan D-11
+Pemilik ingin konten sampai ke belakang jam/baterai dan terlihat di belakang bottom nav (seperti Instagram).
+Bug viewport D-11 dikoreksi dengan `src/viewportFix.ts` → CSS variable `--vh-gap` untuk semua elemen bawah;
+bottom nav semi-transparan + blur. Konsekuensi: teks status bar selalu putih (tidak terbaca di atas panel putih).
+Rollback: meta kembali ke `black`. Status: ter-deploy, **uji iPhone menunggu** (`status.md`).
+
+### D-11 Status bar PWA `black`, bukan `black-translucent` (2026-10-01) — *diganti D-12*
 Bug WebKit: pada web app Home Screen dengan `black-translucent`, viewport kurang setinggi status bar → bottom nav
 melayang 47pt dari tepi bawah. Dengan `black`, konten mulai di bawah status bar dan semua elemen `bottom: 0` menempel.
 Konsekuensi: status bar hitam pekat (`#000`). Diuji di iPhone 13 Pro.
@@ -63,3 +69,4 @@ Konsekuensi: status bar hitam pekat (`#000`). Diuji di iPhone 13 Pro.
 | Opsi B `EXTENSION_REPOS` env | — | Nama env sebenarnya `EXTENSION_STORES`; repo ditambah lewat UI |
 | "Introspection kosong, skema tidak bisa diambil" | D-08 | — |
 | `scripts/healthcheck.sh` | — | Tidak pernah dibutuhkan |
+| D-11 status bar `black` | D-12 | Bug 47pt kini dikoreksi `--vh-gap`; `black` tetap jadi jalur rollback |

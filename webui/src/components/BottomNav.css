@@ -1,11 +1,13 @@
 .bottom-nav {
   position: fixed;
-  bottom: 0;
+  bottom: calc(-1 * var(--vh-gap, 0px));
   left: 0;
   right: 0;
   height: calc(64px + env(safe-area-inset-bottom, 0px));
   padding-bottom: env(safe-area-inset-bottom, 0px);
-  background-color: var(--surface-variant);
+  background-color: rgba(33, 31, 38, 0.82);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(140%);
   border-top: 1px solid var(--outline-variant);
   display: flex;
   justify-content: space-around;

@@ -2,6 +2,9 @@
 
 > Dibaca otomatis oleh agent (Antigravity `agy`, Codex, Claude Code, dll.). Kontrak singkat;
 > konteks lengkap ada di **`.agents/README.md`** — baca itu sebelum aksi apa pun.
+>
+> **Percakapan baru:** baca `.agents/README.md`, lalu recap terbaru di `.agents/recap/`, lalu `.agents/status.md`,
+> lalu hanya file `.agents/` yang dibutuhkan task.
 
 ## Proyek
 

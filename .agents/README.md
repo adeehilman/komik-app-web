@@ -7,10 +7,11 @@
 ## Urutan baca (±5 menit)
 
 1. `../AGENTS.md` — kontrak singkat (peran, larangan, STOP).
-2. `architecture.md` — sistemnya apa, jalan di mana, data mengalir lewat mana.
-3. `rules.md` — scope lock, larangan, protokol per task, format laporan.
-4. `status.md` — apa yang sudah selesai, apa yang masih menunggu manusia.
-5. Baru buka file **node** atau **fitur** yang relevan dengan task-mu (tabel di bawah).
+2. `recap/` — **recap terbaru** (riwayat sesi terakhir + daftar yang masih terbuka). Indeks: `recap/README.md`.
+3. `architecture.md` — sistemnya apa, jalan di mana, data mengalir lewat mana.
+4. `rules.md` — scope lock, larangan, protokol per task, format laporan.
+5. `status.md` + `decisions.md` — kondisi yang berlaku sekarang (menang bila bertentangan dengan recap).
+6. Baru buka file **node** atau **fitur** yang relevan dengan task-mu (tabel di bawah) — jangan membaca semuanya.
 
 ## Peta node (per komponen teknis)
 
@@ -39,6 +40,8 @@
 
 | File | Kapan dibaca |
 |---|---|
+| `recap/` | Awal setiap percakapan baru — mulai dari recap terbaru |
+| `tasks/` | Spesifikasi task siap-kerja untuk agent eksekutor (mis. `W-14-…md`); kerjakan hanya task yang diminta |
 | `decisions.md` | Sebelum mengusulkan perubahan arsitektur — mungkin sudah pernah diputuskan |
 | `best-practices.md` | Sebelum menulis kode WebUI atau menyentuh ops |
 | `workflows/runbook.md` | Operasi harian, deploy WebUI, troubleshooting |

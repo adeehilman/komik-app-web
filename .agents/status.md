@@ -1,4 +1,4 @@
-# Status (per 2026-10-01)
+# Status (per 2026-10-01, setelah W-14)
 
 ## Ringkas
 
@@ -21,11 +21,15 @@ dan uji API ujung-ke-ujung. Yang tersisa adalah uji yang butuh manusia/perangkat
 | Restore | ekstrak arsip → server kedua di port 4568 boot dari data hasil restore, data utuh |
 | Restart container | `docker compose restart` → 200, `restart: unless-stopped` |
 | Bottom nav menempel ke tepi bawah di PWA iPhone (W-13, status bar `black`) | screenshot iPhone: warna nav menerus sampai tepi layar, pita 47pt hilang |
+| W-14 ter-deploy: status bar tembus + `--vh-gap` + nav blur | diff 8 file sesuai task, build & lint lolos, server menyajikan `black-translucent` (uji iPhone di bawah) |
 | Prasyarat reboot | Docker Desktop `AutoStart: true` + terdaftar di startup Windows |
 
 ## Menunggu manusia
 
 - [x] Add to Home Screen → buka dari ikon: tanpa bar Safari, bottom nav menempel ke bawah (W-13).
+- [ ] **W-14 di iPhone** (tambah ulang ikon dulu): Reader webtoon sampai belakang jam; Library — cover samar di belakang
+      nav, nav menempel ke tepi, tidak ada pita gelap; judul tidak tertutup jam; bar aksi, sheet filter, bar bawah reader
+      menempel; putar landscape ↔ portrait; buka keyboard pencarian. Langkah lengkap: `tasks/W-14-konten-penuh-layar.md`.
 - [ ] Library: ganti 4 mode tampilan, filter tri-state, sort, tekan lama 2 manga → aksi.
 - [ ] Browse → source → cari → buka judul → Tambah ke library.
 - [ ] Baca 1 chapter sampai akhir (RTL & webtoon) → keluar → buka lagi → lanjut di halaman terakhir.
