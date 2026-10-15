@@ -1,3 +1,4 @@
+import { serverPath } from '../api/base'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -161,9 +162,9 @@ export function MangaPage() {
       {m && (
         <>
           <section className="manga-header">
-            {m.thumbnailUrl && <div className="manga-backdrop" style={{ backgroundImage: `url("${m.thumbnailUrl}")` }} />}
+            {m.thumbnailUrl && <div className="manga-backdrop" style={m.thumbnailUrl ? { backgroundImage: `url("${serverPath(m.thumbnailUrl)}")` } : undefined} />}
             <div className="manga-header-row">
-              <div className="manga-cover">{m.thumbnailUrl && <img src={m.thumbnailUrl} alt="" />}</div>
+              <div className="manga-cover">{m.thumbnailUrl && <img src={serverPath(m.thumbnailUrl)} alt="" />}</div>
               <div className="manga-info">
                 <h1 className="manga-title">{m.title}</h1>
                 {(m.author || m.artist) && (

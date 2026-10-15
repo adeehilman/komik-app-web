@@ -1,4 +1,6 @@
-const ENDPOINT = '/api/graphql'
+import { serverPath } from './base'
+
+const ENDPOINT = serverPath('/api/graphql')
 
 interface GqlResponse<T> {
   data?: T

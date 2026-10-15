@@ -1,4 +1,5 @@
 import { gql } from './client'
+import { serverPath } from './base'
 
 export interface ChapterItem {
   id: number
@@ -118,5 +119,5 @@ export async function fetchChapterPages(chapterId: number): Promise<string[]> {
     }`,
     { input: { chapterId } },
   )
-  return data.fetchChapterPages.pages
+  return data.fetchChapterPages.pages.map(serverPath)
 }

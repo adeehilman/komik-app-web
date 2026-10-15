@@ -1,4 +1,5 @@
 import { gql } from './client'
+import { serverPath } from './base'
 
 export interface MangaItem {
   id: number
@@ -69,6 +70,7 @@ export async function setMangasCategory(ids: number[], categoryId: number): Prom
 }
 
 /** Thumbnail dari server berupa path relatif `/api/v1/manga/<id>/thumbnail`. */
+
 export function coverUrl(thumbnailUrl: string | null | undefined): string | undefined {
-  return thumbnailUrl || undefined
+  return thumbnailUrl ? serverPath(thumbnailUrl) : undefined
 }

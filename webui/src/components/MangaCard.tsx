@@ -1,3 +1,4 @@
+import { serverPath } from '../api/base'
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Icon } from './Icon'
@@ -45,7 +46,7 @@ export function MangaCard({
     <div className={`card-cover ${dimmed ? 'dimmed' : ''}`}>
       {manga.thumbnailUrl ? (
         <img
-          src={manga.thumbnailUrl}
+          src={manga.thumbnailUrl ? serverPath(manga.thumbnailUrl) : manga.thumbnailUrl}
           alt=""
           loading="lazy"
           decoding="async"

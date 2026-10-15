@@ -1,3 +1,4 @@
+import { serverPath } from '../api/base'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import './EntryRow.css'
@@ -24,7 +25,7 @@ export function EntryRow({
     <div className={`entry-row ${dimmed ? 'dimmed' : ''}`}>
       <Link to={`/manga/${mangaId}`} className="entry-cover">
         {thumbnailUrl && (
-          <img src={thumbnailUrl} alt="" loading="lazy" onError={(e) => (e.currentTarget.style.visibility = 'hidden')} />
+          <img src={thumbnailUrl ? serverPath(thumbnailUrl) : thumbnailUrl} alt="" loading="lazy" onError={(e) => (e.currentTarget.style.visibility = 'hidden')} />
         )}
       </Link>
       <Link to={to} className="entry-text">

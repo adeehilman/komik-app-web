@@ -1,4 +1,5 @@
 import { gql, gqlUpload } from './client'
+import { serverPath } from './base'
 
 export interface BackupFlags {
   includeManga: boolean
@@ -26,7 +27,7 @@ export async function createBackup(flags: BackupFlags): Promise<string> {
     `mutation CreateBackup($input: CreateBackupInput!) { createBackup(input: $input) { url } }`,
     { input: { flags } },
   )
-  return data.createBackup.url
+  return serverPath(data.createBackup.url)
 }
 
 export interface BackupValidation {
