@@ -11,9 +11,14 @@
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="apple-touch-icon" href="icon-180.png" />
     <title>Mihon</title>
+    <style>
+      html, body { background: #121212; margin: 0; }
+      #boot { color: #888; font-family: system-ui, sans-serif; display: flex;
+              align-items: center; justify-content: center; height: 100vh; }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root"><div id="boot">Memuat Mihon…</div></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
