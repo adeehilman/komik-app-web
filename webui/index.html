@@ -13,12 +13,63 @@
     <title>Mihon</title>
     <style>
       html, body { background: #121212; margin: 0; }
-      #boot { color: #888; font-family: system-ui, sans-serif; display: flex;
-              align-items: center; justify-content: center; height: 100vh; }
+      #boot { color: #888; font-family: system-ui, sans-serif; display: flex; flex-direction: column;
+              gap: 14px; align-items: center; justify-content: center; min-height: 100vh;
+              padding: 24px; text-align: center; box-sizing: border-box; }
+      #bootErr { display: none; color: #e57373; font-size: 13px; max-width: 92vw;
+                 word-break: break-word; white-space: pre-line; }
+      #bootRetry { display: none; background: #2a2a2e; color: #fff; border: 1px solid #555;
+                   border-radius: 8px; padding: 10px 22px; font-size: 15px; cursor: pointer; }
     </style>
   </head>
   <body>
-    <div id="root"><div id="boot">Memuat Mihon…</div></div>
+    <div id="root"><div id="boot">
+      <div id="bootMsg">Memuat Mihon…</div>
+      <div id="bootErr"></div>
+      <button id="bootRetry" type="button">Coba lagi (bersihkan cache)</button>
+    </div></div>
+    <script>
+      // Pelapor error boot: tampilkan error JS / timeout di layar agar bisa dilaporkan.
+      (function () {
+        function show(msg) {
+          var el = document.getElementById('bootErr');
+          if (!el) return;
+          el.style.display = 'block';
+          el.textContent += (el.textContent ? '\n' : '') + msg;
+          var r = document.getElementById('bootRetry');
+          if (r) r.style.display = 'block';
+        }
+        window.addEventListener('error', function (e) {
+          show('Error: ' + (e.message || e.type || 'unknown'));
+        }, true);
+        window.addEventListener('unhandledrejection', function (e) {
+          var r = e.reason;
+          show('Promise: ' + ((r && r.message) || r || 'unknown'));
+        });
+        setTimeout(function () {
+          if (document.getElementById('boot')) {
+            var m = document.getElementById('bootMsg');
+            if (m) m.textContent = 'Masih memuat… (>25 detik)';
+            show('Aplikasi tidak kunjung termuat. Kemungkinan cache / file JS bermasalah.');
+          }
+        }, 25000);
+        document.getElementById('bootRetry').addEventListener('click', function () {
+          (async function () {
+            try {
+              if ('serviceWorker' in navigator) {
+                var regs = await navigator.serviceWorker.getRegistrations();
+                for (var i = 0; i < regs.length; i++) await regs[i].unregister();
+              }
+              if (window.caches) {
+                var keys = await caches.keys();
+                for (var j = 0; j < keys.length; j++) await caches.delete(keys[j]);
+              }
+            } catch (e) {}
+            location.reload();
+          })();
+        });
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

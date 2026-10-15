@@ -5,7 +5,7 @@
  * - Halaman chapter, cover, ikon extension: cache-first dengan batas umur & jumlah entri.
  * - GraphQL & API lain: TIDAK di-cache (selalu jaringan).
  */
-const VERSION = 'v1'
+const VERSION = 'v2'
 const SHELL = `mihon-shell-${VERSION}`
 const PAGES = `mihon-pages-${VERSION}`
 const COVERS = `mihon-covers-${VERSION}`
