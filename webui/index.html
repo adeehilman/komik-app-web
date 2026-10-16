@@ -45,6 +45,17 @@
       // Pelapor error + diagnosis boot: tampilkan error JS / gagal muat resource
       // beserta hasil probe jaringan di layar agar bisa dilaporkan.
       (function () {
+        // Tanpa trailing slash (mis. /komik), URL relatif (vite base './')
+        // resolve ke root sehingga JS/CSS 404 dan aplikasi tidak pernah boot.
+        // Redirect dulu ke versi trailing slash; generik untuk subpath apa pun.
+        try {
+          var p = location.pathname;
+          var last = p.split('/').pop();
+          if (p.length > 1 && !/\/$/.test(p) && last.indexOf('.') === -1) {
+            location.replace(p + '/' + location.search + location.hash);
+            return;
+          }
+        } catch (e) {}
         var t0 = Date.now();
         var lines = [];
         var probed = false;
