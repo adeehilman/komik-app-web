@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useSearchParams } from 'react-router-dom'
+import { serverPath } from '../api/base'
 import { fetchSources } from '../api/source'
 import type { SourceItem } from '../api/source'
 import { changeExtension, fetchExtensions, refreshExtensionStore } from '../api/extension'
@@ -55,7 +56,7 @@ function SourcesTab() {
           {sources.map((s) => (
             <div key={s.id} className="list-item source-row">
               <Link to={`/browse/source/${s.id}`} className="source-link">
-                <img className="source-icon" src={s.iconUrl} alt="" loading="lazy" />
+                <img className="source-icon" src={serverPath(s.iconUrl)} alt="" loading="lazy" />
                 <span className="list-item-text">
                   <span className="list-item-title">{s.name}</span>
                   {s.isNsfw && <span className="list-item-subtitle">18+</span>}
@@ -124,7 +125,7 @@ function ExtensionsTab() {
     const action: ExtensionAction | null = !ext.isInstalled ? 'install' : ext.hasUpdate ? 'update' : null
     return (
       <div key={ext.pkgName} className="list-item">
-        <img className="source-icon" src={ext.iconUrl} alt="" loading="lazy" />
+        <img className="source-icon" src={serverPath(ext.iconUrl)} alt="" loading="lazy" />
         <span className="list-item-text">
           <span className="list-item-title">{ext.name}</span>
           <span className="list-item-subtitle">
