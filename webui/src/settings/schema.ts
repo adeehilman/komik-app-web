@@ -24,6 +24,7 @@ export interface SettingsSchema {
   // Tambahan 2026-10-01 (lihat .agents/nodes/settings.md):
   mihonweb_library_random_seed: number // urutan "random" stabil sampai diacak ulang (W-04b)
   mihonweb_browse_langs: string // bahasa extension yang ditampilkan, dipisah koma (W-05)
+  mihonweb_browse_hide_nsfw: boolean // sembunyikan extension 18+ dari daftar Tersedia
   mihonweb_updates_last_seen: number // detik epoch; badge chapter baru di tab Updates (W-12)
   mihonweb_reader_preload_all: boolean // muat seluruh halaman chapter yang dibuka (W-16)
   mihonweb_reader_continuous: boolean // lanjut otomatis ke chapter berikutnya saat sampai ujung
@@ -57,6 +58,7 @@ export const SETTINGS_DEFAULTS: SettingsSchema = {
   mihonweb_library_last_category: 0,
   mihonweb_library_random_seed: 1,
   mihonweb_browse_langs: 'all,id,en',
+  mihonweb_browse_hide_nsfw: false,
   mihonweb_updates_last_seen: 0,
   mihonweb_reader_preload_all: true,
   mihonweb_reader_continuous: false,

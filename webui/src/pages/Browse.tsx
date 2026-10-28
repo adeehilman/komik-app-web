@@ -8,6 +8,7 @@ import { changeExtension, fetchExtensions, refreshExtensionStore } from '../api/
 import type { ExtensionAction, ExtensionItem } from '../api/extension'
 import { TopBar } from '../components/TopBar'
 import { Icon } from '../components/Icon'
+import { Sheet } from '../components/Sheet'
 import { useSetting } from '../settings/useSetting'
 import './Browse.css'
 
@@ -79,6 +80,8 @@ function ExtensionsTab() {
   const queryClient = useQueryClient()
   const [search, setSearch] = useState('')
   const [langSetting, setLangSetting] = useSetting('mihonweb_browse_langs')
+  const [hideNsfw, setHideNsfw] = useSetting('mihonweb_browse_hide_nsfw')
+  const [filterOpen, setFilterOpen] = useState(false)
   const [showAll, setShowAll] = useState(false)
   const langs = useMemo(() => new Set(langSetting.split(',').filter(Boolean)), [langSetting])
   const { data, isLoading, error } = useQuery({ queryKey: ['extensions'], queryFn: fetchExtensions })
@@ -119,7 +122,17 @@ function ExtensionsTab() {
   const match = (e: ExtensionItem) => !q || e.name.toLowerCase().includes(q)
   const updates = (data ?? []).filter((e) => e.isInstalled && (e.hasUpdate || e.isObsolete) && match(e))
   const installed = (data ?? []).filter((e) => e.isInstalled && !e.hasUpdate && !e.isObsolete && match(e))
-  const available = (data ?? []).filter((e) => !e.isInstalled && langs.has(e.lang) && match(e))
+  // Filter NSFW hanya untuk daftar Tersedia: extension terpasang tetap tampil
+  // (2 dari 4 yang terpasang bertanda NSFW) supaya tetap bisa di-update/uninstall.
+  const available = (data ?? []).filter(
+    (e) => !e.isInstalled && langs.has(e.lang) && (!hideNsfw || !e.isNsfw) && match(e),
+  )
+  const langCounts = useMemo(() => {
+    const map = new Map<string, number>()
+    for (const e of data ?? []) if (!e.isInstalled) map.set(e.lang, (map.get(e.lang) ?? 0) + 1)
+    return map
+  }, [data])
+  const allLangsSelected = allLangs.length > 0 && allLangs.every((l) => langs.has(l))
 
   const row = (ext: ExtensionItem) => {
     const action: ExtensionAction | null = !ext.isInstalled ? 'install' : ext.hasUpdate ? 'update' : null
@@ -172,13 +185,9 @@ function ExtensionsTab() {
         >
           <Icon name="refresh" />
         </button>
-      </div>
-      <div className="chip-row">
-        {allLangs.map((l) => (
-          <button key={l} type="button" className={`chip ${langs.has(l) ? 'active' : ''}`} onClick={() => toggleLang(l)}>
-            {langName(l)}
-          </button>
-        ))}
+        <button type="button" className="icon-btn" aria-label="Filter" onClick={() => setFilterOpen(true)}>
+          <Icon name="more" />
+        </button>
       </div>
       {refresh.isPending && <div className="progress-bar indeterminate"><div className="progress-bar-fill" /></div>}
       {isLoading && <div className="spinner" />}
@@ -208,6 +217,30 @@ function ExtensionsTab() {
           )}
         </>
       )}
+      <Sheet open={filterOpen} onClose={() => setFilterOpen(false)}>
+        <div className="section-title">Bahasa</div>
+        <button type="button" className="list-item" onClick={() => setLangSetting(allLangs.join(','))}>
+          <span className="sort-arrow">{allLangsSelected && <Icon name="check" size={18} />}</span>
+          <span className="list-item-title">Semua bahasa</span>
+        </button>
+        {allLangs.map((l) => (
+          <button key={l} type="button" className="list-item" onClick={() => toggleLang(l)}>
+            <span className="sort-arrow">{langs.has(l) && <Icon name="check" size={18} />}</span>
+            <span className="list-item-text">
+              <span className="list-item-title">{langName(l)}</span>
+              <span className="list-item-subtitle">{langCounts.get(l) ?? 0} extension</span>
+            </span>
+          </button>
+        ))}
+        <div className="section-title">Konten</div>
+        <label className="list-item">
+          <input type="checkbox" checked={hideNsfw} onChange={(e) => setHideNsfw(e.target.checked)} />
+          <span className="list-item-text">
+            <span className="list-item-title">Sembunyikan 18+ (NSFW)</span>
+            <span className="list-item-subtitle">Hanya untuk daftar Tersedia — extension terpasang tetap tampil</span>
+          </span>
+        </label>
+      </Sheet>
     </>
   )
 }
