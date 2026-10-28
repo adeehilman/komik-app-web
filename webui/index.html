@@ -17,6 +17,14 @@
       #boot { color: #888; font-family: system-ui, sans-serif; display: flex; flex-direction: column;
               gap: 14px; align-items: center; justify-content: center; min-height: 100vh;
               padding: 24px; text-align: center; box-sizing: border-box; }
+      /* Splash: logo + nama + spinner. Kotak debug di bawah tetap ada di DOM
+         tapi tersembunyi sampai boot benar-benar gagal (lihat skrip). */
+      #bootLogo { width: 120px; height: 120px; border-radius: 28px; }
+      #bootMsg { color: #ddd; font-size: 22px; font-weight: 600; letter-spacing: 0.5px; }
+      #bootSpinner { width: 28px; height: 28px; border-radius: 50%; margin-top: 6px;
+                     border: 3px solid #333; border-top-color: #1e88e5;
+                     animation: bootSpin 0.9s linear infinite; }
+      @keyframes bootSpin { to { transform: rotate(360deg); } }
       #bootErr { display: none; color: #e57373; font-size: 13px; max-width: 92vw;
                  word-break: break-word; white-space: pre-line; }
       #bootDbgWrap { display: none; width: 100%; max-width: 92vw; }
@@ -33,7 +41,9 @@
   </head>
   <body>
     <div id="root"><div id="boot">
-      <div id="bootMsg">Memuat Mihon…</div>
+      <img id="bootLogo" src="icon-192.png" alt="" />
+      <div id="bootMsg">Mihon</div>
+      <div id="bootSpinner"></div>
       <div id="bootErr"></div>
       <div id="bootDbgWrap"><pre id="bootDbg"></pre></div>
       <div id="bootBtnRow">
@@ -43,8 +53,9 @@
       <div id="bootCopyOk">Info debug tersalin — kirim ke admin.</div>
     </div></div>
     <script>
-      // Pelapor error + diagnosis boot: tampilkan error JS / gagal muat resource
-      // beserta hasil probe jaringan di layar agar bisa dilaporkan.
+      // Pelapor error + diagnosis boot: HANYA tampil saat boot gagal (error JS,
+      // gagal muat resource, atau timeout 25 detik). Saat boot sehat, layar
+      // hanya menampilkan splash (logo + nama + spinner) tanpa kotak debug.
       (function () {
         // Tanpa trailing slash (mis. /komik), URL relatif (vite base './')
         // resolve ke root sehingga JS/CSS 404 dan aplikasi tidak pernah boot.
@@ -177,7 +188,8 @@
             done();
           }
         });
-        log('boot reporter aktif');
+        // Sengaja TIDAK log di awal: log() akan menampilkan kotak debug,
+        // dan kotak itu hanya boleh muncul bila boot benar-benar gagal.
       })();
     </script>
     <script type="module" src="/src/main.tsx"></script>
