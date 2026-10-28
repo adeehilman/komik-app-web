@@ -26,16 +26,20 @@ export interface WarmProgress {
  * gagal = dilewati (dicoba lagi saat cover itu dibuka). Mengonsumsi body
  * supaya unduhan tuntas walau service worker sedang diperbarui.
  * Sengaja tanpa AbortController: tetap jalan sampai selesai walau pengguna
- * pindah halaman.
+ * pindah halaman. Berhenti hanya bila isCancelled() true (tombol Batal)
+ * atau halaman ditutup (JS ikut berhenti).
  */
 export async function warmCovers(
   urls: string[],
   onProgress?: (p: WarmProgress) => void,
-): Promise<WarmProgress> {
+  isCancelled?: () => boolean,
+): Promise<WarmProgress & { cancelled: boolean }> {
   const progress: WarmProgress = { done: 0, total: urls.length, failed: 0, bytes: 0 }
-  if (typeof caches === 'undefined') return progress
+  const cancelled = () => isCancelled?.() ?? false
+  if (typeof caches === 'undefined') return { ...progress, cancelled: false }
   const missing: string[] = []
   for (const u of urls) {
+    if (cancelled()) break
     try {
       const hit = await caches.match(u, { ignoreSearch: true })
       if (!hit) missing.push(u)
@@ -49,6 +53,7 @@ export async function warmCovers(
   const report = () => onProgress?.({ ...progress })
   report()
   for (let i = 0; i < missing.length; i += 6) {
+    if (cancelled()) break
     await Promise.all(
       missing.slice(i, i + 6).map(async (u) => {
         try {
@@ -66,5 +71,5 @@ export async function warmCovers(
     )
   }
   report()
-  return { ...progress }
+  return { ...progress, cancelled: cancelled() }
 }

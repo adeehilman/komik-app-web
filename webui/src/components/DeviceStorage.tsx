@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
-import { fetchLibrary } from '../api/library'
-import { collectCoverUrls, warmCovers } from '../api/coverWarm'
+import { cancelDownload, startDownload, useDownloadState } from '../api/downloadManager'
 
 /** Pemakaian & penghapusan cache service worker di perangkat ini (W-15). */
 const IMAGE_CACHE_PREFIXES = ['mihon-pages-', 'mihon-covers-', 'mihon-icons-']
@@ -13,9 +12,9 @@ export function DeviceStorage() {
   const [usage, setUsage] = useState('menghitung…')
   const [persisted, setPersisted] = useState<boolean | null>(null)
   const [busy, setBusy] = useState(false)
-  const [downloading, setDownloading] = useState(false)
-  const [progress, setProgress] = useState('')
-  const [result, setResult] = useState('')
+  // State unduhan dibaca dari manajer global: tetap live walau komponen ini
+  // sempat tidak tampil (pengguna pindah halaman lalu kembali).
+  const dl = useDownloadState()
   const active = 'serviceWorker' in navigator && navigator.serviceWorker.controller !== null
   const supported = typeof caches !== 'undefined'
 
@@ -39,6 +38,11 @@ export function DeviceStorage() {
     refresh()
   }, [])
 
+  // Setelah unduhan selesai, perbarui angka pemakaian.
+  useEffect(() => {
+    if (dl.status === 'done') refresh()
+  }, [dl.status])
+
   const clear = async () => {
     if (!window.confirm('Hapus cache gambar di perangkat ini? Halaman akan diunduh ulang saat dibuka.')) return
     setBusy(true)
@@ -52,29 +56,17 @@ export function DeviceStorage() {
     }
   }
 
-  const downloadAll = async () => {
-    if (downloading) return
-    setDownloading(true)
-    setResult('')
-    try {
-      const { mangas } = await fetchLibrary()
-      const urls = collectCoverUrls(mangas)
-      const summary = await warmCovers(urls, (p) => {
-        setProgress(`Mengunduh cover ${p.done}/${p.total} · ${formatMB(p.bytes)}`)
-      })
-      setProgress('')
-      setResult(
-        `Selesai: ${summary.total - summary.failed}/${summary.total} cover · ${formatMB(summary.bytes)}` +
-          (summary.failed > 0 ? ` · ${summary.failed} gagal (dicoba lagi saat dibuka)` : ''),
-      )
-      refresh()
-    } catch {
-      setProgress('')
-      setResult('Gagal memulai unduhan — coba lagi.')
-    } finally {
-      setDownloading(false)
-    }
-  }
+  const running = dl.status === 'running'
+  const pct = dl.total > 0 ? Math.round((dl.done / dl.total) * 100) : 0
+  const dlSubtitle =
+    dl.status === 'running'
+      ? `Mengunduh cover ${dl.done}/${dl.total} · ${formatMB(dl.bytes)} · ${pct}%`
+      : dl.status === 'done'
+        ? `Selesai: ${dl.total - dl.failed}/${dl.total} cover · ${formatMB(dl.bytes)}` +
+          (dl.failed > 0 ? ` · ${dl.failed} gagal (dicoba lagi saat dibuka)` : '')
+        : dl.status === 'cancelled'
+          ? `Dibatalkan (${dl.done}/${dl.total} terunduh) — ketuk Unduh untuk melanjutkan dari sisanya.`
+          : dl.error ?? 'Simpan semua cover library ke perangkat (±40 MB). Sekali tersimpan, cover tidak ikut terhapus saat aplikasi diperbarui.'
 
   return (
     <>
@@ -91,16 +83,27 @@ export function DeviceStorage() {
           Hapus
         </button>
       </div>
-      <div className="list-item">
-        <span className="list-item-text">
-          <span className="list-item-title">Unduh semua cover</span>
-          <span className="list-item-subtitle">
-            {progress || result || 'Simpan semua cover library ke perangkat (±40 MB). Sekali tersimpan, cover tidak ikut terhapus saat aplikasi diperbarui.'}
+      <div>
+        <div className="list-item">
+          <span className="list-item-text">
+            <span className="list-item-title">Unduh semua cover</span>
+            <span className="list-item-subtitle">{dlSubtitle}</span>
           </span>
-        </span>
-        <button type="button" className="btn btn-text" disabled={downloading || !supported || !active} onClick={downloadAll}>
-          {downloading ? 'Mengunduh…' : 'Unduh'}
-        </button>
+          {running ? (
+            <button type="button" className="btn btn-text" disabled={!supported} onClick={cancelDownload}>
+              Batal
+            </button>
+          ) : (
+            <button type="button" className="btn btn-text" disabled={!supported || !active} onClick={() => void startDownload()}>
+              Unduh
+            </button>
+          )}
+        </div>
+        {(running || dl.status === 'done' || dl.status === 'cancelled') && dl.total > 0 && (
+          <div style={{ height: 8, background: '#333', borderRadius: 4, margin: '2px 0 10px', overflow: 'hidden' }}>
+            <div style={{ height: '100%', width: `${pct}%`, background: '#1e88e5', borderRadius: 4 }} />
+          </div>
+        )}
       </div>
     </>
   )
