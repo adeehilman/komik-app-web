@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { fetchLibrary } from '../api/library'
+import { collectCoverUrls, warmCovers } from '../api/coverWarm'
 
 /** Pemakaian & penghapusan cache service worker di perangkat ini (W-15). */
 const IMAGE_CACHE_PREFIXES = ['mihon-pages-', 'mihon-covers-', 'mihon-icons-']
@@ -11,6 +13,9 @@ export function DeviceStorage() {
   const [usage, setUsage] = useState('menghitung…')
   const [persisted, setPersisted] = useState<boolean | null>(null)
   const [busy, setBusy] = useState(false)
+  const [downloading, setDownloading] = useState(false)
+  const [progress, setProgress] = useState('')
+  const [result, setResult] = useState('')
   const active = 'serviceWorker' in navigator && navigator.serviceWorker.controller !== null
   const supported = typeof caches !== 'undefined'
 
@@ -47,6 +52,30 @@ export function DeviceStorage() {
     }
   }
 
+  const downloadAll = async () => {
+    if (downloading) return
+    setDownloading(true)
+    setResult('')
+    try {
+      const { mangas } = await fetchLibrary()
+      const urls = collectCoverUrls(mangas)
+      const summary = await warmCovers(urls, (p) => {
+        setProgress(`Mengunduh cover ${p.done}/${p.total} · ${formatMB(p.bytes)}`)
+      })
+      setProgress('')
+      setResult(
+        `Selesai: ${summary.total - summary.failed}/${summary.total} cover · ${formatMB(summary.bytes)}` +
+          (summary.failed > 0 ? ` · ${summary.failed} gagal (dicoba lagi saat dibuka)` : ''),
+      )
+      refresh()
+    } catch {
+      setProgress('')
+      setResult('Gagal memulai unduhan — coba lagi.')
+    } finally {
+      setDownloading(false)
+    }
+  }
+
   return (
     <>
       <div className="section-title">Penyimpanan di perangkat</div>
@@ -60,6 +89,17 @@ export function DeviceStorage() {
         </span>
         <button type="button" className="btn btn-text" disabled={busy || !supported} onClick={clear}>
           Hapus
+        </button>
+      </div>
+      <div className="list-item">
+        <span className="list-item-text">
+          <span className="list-item-title">Unduh semua cover</span>
+          <span className="list-item-subtitle">
+            {progress || result || 'Simpan semua cover library ke perangkat (±40 MB). Sekali tersimpan, cover tidak ikut terhapus saat aplikasi diperbarui.'}
+          </span>
+        </span>
+        <button type="button" className="btn btn-text" disabled={downloading || !supported || !active} onClick={downloadAll}>
+          {downloading ? 'Mengunduh…' : 'Unduh'}
         </button>
       </div>
     </>
