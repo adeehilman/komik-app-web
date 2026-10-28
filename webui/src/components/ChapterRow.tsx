@@ -4,9 +4,21 @@ import { toNumber } from '../api/client'
 import { Icon } from './Icon'
 import { useLongPress } from './useLongPress'
 
+/**
+ * Tanggal relatif untuk seminggu terakhir (perbandingan hari kalender lokal,
+ * bukan selisih 24 jam): hari ini -> Today, kemarin -> Yesterday,
+ * 2-7 hari lalu -> "N days ago". Lebih dari seminggu atau tanggal di masa
+ * depan -> tanggal absolut seperti sebelumnya ("27 Okt 2026").
+ */
 export function formatDate(ms: number): string {
   if (!ms) return ''
-  return new Date(ms).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+  const date = new Date(ms)
+  const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
+  const diffDays = Math.round((startOfDay(new Date()) - startOfDay(date)) / 86400000)
+  if (diffDays === 0) return 'Today'
+  if (diffDays === 1) return 'Yesterday'
+  if (diffDays > 1 && diffDays <= 7) return `${diffDays} days ago`
+  return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
 interface ChapterRowProps {
