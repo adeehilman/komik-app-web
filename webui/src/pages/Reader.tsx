@@ -98,6 +98,15 @@ function Reader({ chapterId }: { chapterId: number }) {
 
   /* ---------- Simpan progres ke server (debounce) ---------- */
   const markedRead = useRef(false)
+  // Apakah pengguna sudah benar-benar berpindah halaman sejak dibuka. Selama
+  // belum bergerak, JANGAN simpan apa pun: bila posisi awal ternyata basi (0)
+  // karena simpanan kunjungan sebelumnya belum mendarat di server, menyimpan 0
+  // justru menimpa progres asli yang sedang dalam perjalanan.
+  const movedRef = useRef(false)
+  const startIndexRef = useRef(0)
+  useEffect(() => {
+    startIndexRef.current = startIndex
+  }, [startIndex])
   // Cermin index/total + halaman terakhir yang terkonfirmasi tersimpan, untuk
   // flush saat unmount (cleanup tidak bisa membaca state terbaru lewat closure).
   const indexRef = useRef<number | null>(null)
@@ -111,6 +120,8 @@ function Reader({ chapterId }: { chapterId: number }) {
   }, [total])
   useEffect(() => {
     if (index === null || total === 0) return
+    // Belum bergerak dari posisi awal = tidak ada yang baru untuk disimpan.
+    if (!movedRef.current && index === startIndex) return
     const page = Math.min(index, total - 1)
     const finished = index >= total - 1
     const timer = window.setTimeout(() => {
@@ -125,15 +136,17 @@ function Reader({ chapterId }: { chapterId: number }) {
         })
     }, SAVE_DELAY_MS)
     return () => window.clearTimeout(timer)
-  }, [index, total, chapterId])
+  }, [index, total, chapterId, startIndex])
 
   // Saat keluar reader: kirim dulu progres terakhir yang masih tertahan debounce
   // (keluar <500 ms setelah pindah halaman), lalu segarkan daftar yang menampilkan progres.
+  // Sama seperti di atas: bila belum bergerak dari posisi awal, jangan flush —
+  // itu hanya akan menimpa progres asli dengan posisi awal yang mungkin basi.
   useEffect(() => {
     return () => {
       const idx = indexRef.current
       const tot = totalRef.current
-      if (idx !== null && tot > 0 && idx !== lastSavedRef.current) {
+      if (idx !== null && tot > 0 && idx !== lastSavedRef.current && (movedRef.current || idx !== startIndexRef.current)) {
         const page = Math.min(idx, tot - 1)
         const patch = idx >= tot - 1 ? { lastPageRead: page, isRead: true } : { lastPageRead: page }
         updateChapters([chapterId], patch).catch(() => {})
@@ -188,13 +201,17 @@ function Reader({ chapterId }: { chapterId: number }) {
 
   const onNext = () => {
     if (index === null) return
-    if (index < total) setIndex(index + 1)
-    else goChapter(next?.id)
+    if (index < total) {
+      if (index + 1 !== startIndex) movedRef.current = true
+      setIndex(index + 1)
+    } else goChapter(next?.id)
   }
   const onPrev = () => {
     if (index === null) return
-    if (index > 0) setIndex(index - 1)
-    else goChapter(prev?.id)
+    if (index > 0) {
+      if (index - 1 !== startIndex) movedRef.current = true
+      setIndex(index - 1)
+    } else goChapter(prev?.id)
   }
 
   /* ---------- Baca lanjut otomatis (ujung chapter -> chapter berikutnya) ---------- */
@@ -210,11 +227,15 @@ function Reader({ chapterId }: { chapterId: number }) {
     goChapter(next.id)
   }, [continuous, index, total, next, chapterId, goChapter])
 
-  const onWebtoonPage = useCallback((i: number) => setIndex(i), [])
+  const onWebtoonPage = useCallback((i: number) => {
+    if (i !== startIndexRef.current) movedRef.current = true
+    setIndex(i)
+  }, [])
   const onWebtoonEnd = useCallback(() => setIndex(total), [total])
   const toggleMenu = useCallback(() => setMenu((v) => !v), [])
 
   const jumpTo = (i: number) => {
+    if (i !== startIndex) movedRef.current = true
     setIndex(i)
     if (mode.value === 'webtoon') webtoon.current?.scrollToPage(i)
   }
