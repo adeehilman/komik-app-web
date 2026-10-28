@@ -84,16 +84,31 @@ function Reader({ chapterId }: { chapterId: number }) {
   }, [siblings.data, chapterId])
 
   // Posisi awal: lanjut dari lastPageRead kecuali chapter sudah selesai.
+  // JANGAN pakai data cache basi: saat chapter dibuka ulang, React Query langsung
+  // menyajikan cache kunjungan sebelumnya (lastPageRead lama, mis. 0) sambil
+  // refetch di latar. Tanpa penjaga isFetching, efek ini mengunci 0 dan penjaga
+  // index !== null memblokir koreksi saat data segar tiba -> selalu mulai dari awal.
   useEffect(() => {
-    if (index !== null || !chapter.data || total === 0) return
+    if (index !== null || !chapter.data || total === 0 || chapter.isFetching) return
     const c = chapter.data
     const start = c.isRead ? 0 : Math.min(Math.max(0, c.lastPageRead), total - 1)
     setStartIndex(start)
     setIndex(start)
-  }, [chapter.data, total, index])
+  }, [chapter.data, total, index, chapter.isFetching])
 
   /* ---------- Simpan progres ke server (debounce) ---------- */
   const markedRead = useRef(false)
+  // Cermin index/total + halaman terakhir yang terkonfirmasi tersimpan, untuk
+  // flush saat unmount (cleanup tidak bisa membaca state terbaru lewat closure).
+  const indexRef = useRef<number | null>(null)
+  const totalRef = useRef(0)
+  const lastSavedRef = useRef<number | null>(null)
+  useEffect(() => {
+    indexRef.current = index
+  }, [index])
+  useEffect(() => {
+    totalRef.current = total
+  }, [total])
   useEffect(() => {
     if (index === null || total === 0) return
     const page = Math.min(index, total - 1)
@@ -101,21 +116,33 @@ function Reader({ chapterId }: { chapterId: number }) {
     const timer = window.setTimeout(() => {
       const patch = finished && !markedRead.current ? { lastPageRead: page, isRead: true } : { lastPageRead: page }
       if (finished) markedRead.current = true
-      updateChapters([chapterId], patch).catch(() => {
-        if (finished) markedRead.current = false
-      })
+      updateChapters([chapterId], patch)
+        .then(() => {
+          lastSavedRef.current = page
+        })
+        .catch(() => {
+          if (finished) markedRead.current = false
+        })
     }, SAVE_DELAY_MS)
     return () => window.clearTimeout(timer)
   }, [index, total, chapterId])
 
-  // Saat keluar reader: segarkan daftar yang menampilkan progres.
+  // Saat keluar reader: kirim dulu progres terakhir yang masih tertahan debounce
+  // (keluar <500 ms setelah pindah halaman), lalu segarkan daftar yang menampilkan progres.
   useEffect(() => {
     return () => {
+      const idx = indexRef.current
+      const tot = totalRef.current
+      if (idx !== null && tot > 0 && idx !== lastSavedRef.current) {
+        const page = Math.min(idx, tot - 1)
+        const patch = idx >= tot - 1 ? { lastPageRead: page, isRead: true } : { lastPageRead: page }
+        updateChapters([chapterId], patch).catch(() => {})
+      }
       for (const key of ['chapters', 'library', 'history', 'updates', 'readerChapter']) {
         queryClient.invalidateQueries({ queryKey: [key] })
       }
     }
-  }, [queryClient])
+  }, [queryClient, chapterId])
 
   /* ---------- Preload ---------- */
   useEffect(() => {
