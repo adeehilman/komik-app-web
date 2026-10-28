@@ -64,6 +64,7 @@ function Reader({ chapterId }: { chapterId: number }) {
   const [tapZones, setTapZones] = useSetting('mihonweb_reader_tap_zones')
   const [gap, setGap] = useSetting('mihonweb_reader_webtoon_gap')
   const [preloadAll, setPreloadAll] = useSetting('mihonweb_reader_preload_all')
+  const [continuous, setContinuous] = useSetting('mihonweb_reader_continuous')
 
   const [index, setIndex] = useState<number | null>(null)
   /** Halaman awal saat chapter dibuka; dibekukan supaya webtoon tidak melompat saat digulir. */
@@ -152,6 +153,19 @@ function Reader({ chapterId }: { chapterId: number }) {
     if (index > 0) setIndex(index - 1)
     else goChapter(prev?.id)
   }
+
+  /* ---------- Baca lanjut otomatis (ujung chapter -> chapter berikutnya) ---------- */
+  // index === total = layar transisi akhir chapter. Tanpa simpan eksplisit di sini,
+  // navigasi langsung akan melepas timer debounce simpan progres (cleanup
+  // clearTimeout saat unmount), sehingga chapter tidak tertandai selesai.
+  const advancedRef = useRef(false)
+  useEffect(() => {
+    if (!continuous || index === null || total === 0 || index < total || !next) return
+    if (advancedRef.current) return
+    advancedRef.current = true
+    updateChapters([chapterId], { lastPageRead: total - 1, isRead: true }).catch(() => {})
+    goChapter(next.id)
+  }, [continuous, index, total, next, chapterId, goChapter])
 
   const onWebtoonPage = useCallback((i: number) => setIndex(i), [])
   const onWebtoonEnd = useCallback(() => setIndex(total), [total])
@@ -374,6 +388,14 @@ function Reader({ chapterId }: { chapterId: number }) {
           <span className="list-item-text">
             <span className="list-item-title">Muat seluruh chapter</span>
             <span className="list-item-subtitle">Semua halaman diunduh saat chapter dibuka (±20 MB per chapter)</span>
+          </span>
+        </label>
+
+        <label className="list-item">
+          <input type="checkbox" checked={continuous} onChange={(e) => setContinuous(e.target.checked)} />
+          <span className="list-item-text">
+            <span className="list-item-title">Lanjut otomatis</span>
+            <span className="list-item-subtitle">Ujung chapter langsung membuka chapter berikutnya, tanpa tombol</span>
           </span>
         </label>
       </Sheet>

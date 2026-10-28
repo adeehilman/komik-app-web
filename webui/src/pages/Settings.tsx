@@ -35,6 +35,7 @@ export function SettingsPage() {
   const settings = useQuery({ queryKey: ['serverSettings'], queryFn: fetchUpdateSettings })
   const lastUpdate = useQuery({ queryKey: ['lastUpdateTimestamp'], queryFn: fetchLastUpdateTimestamp })
   const [readerMode, setReaderMode] = useSetting('mihonweb_reader_mode')
+  const [continuous, setContinuous] = useSetting('mihonweb_reader_continuous')
 
   const save = useMutation({
     mutationFn: saveUpdateSettings,
@@ -137,6 +138,14 @@ export function SettingsPage() {
             </option>
           ))}
         </select>
+      </label>
+
+      <label className="list-item">
+        <span className="list-item-text">
+          <span className="list-item-title">Lanjut otomatis ke chapter berikutnya</span>
+          <span className="list-item-subtitle">Sampai ujung chapter langsung membuka chapter berikutnya, tanpa tombol</span>
+        </span>
+        <input type="checkbox" checked={continuous} onChange={(e) => setContinuous(e.target.checked)} />
       </label>
 
       <FcmSettings />
