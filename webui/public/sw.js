@@ -5,7 +5,10 @@
  * - Halaman chapter, cover, ikon extension: cache-first dengan batas umur & jumlah entri.
  * - GraphQL query (baca data: library, chapter, halaman): stale-while-revalidate,
  *   jadi halaman data tetap terbuka dari cache saat backend mati. Mutation
- *   (simpan progres, unduhan, dsb) TIDAK PERNAH di-cache — selalu jaringan.
+ *   TIDAK di-cache — KECUALI fetchChapterPages: mutation itu hanya membaca
+ *   daftar URL halaman (stabil per chapter), dan reader tidak bisa tampil
+ *   tanpa daftar itu, jadi responsnya di-cache dengan pola yang sama.
+ *   Mutation lain (simpan progres, unduhan, refresh) selalu jaringan.
  *   VERSION sengaja tetap v2: cache gambar yang sudah ada tidak boleh terhapus.
  * - FCM (pengecualian aturan §3, 2026-10-27): handler push chapter baru, digabung ke
  *   file ini karena dua service worker dengan scope yang sama saling menggantikan.
@@ -58,7 +61,7 @@ function route(url) {
 self.addEventListener('fetch', (event) => {
   const req = event.request
   const url = new URL(req.url)
-  // GraphQL query (POST) di-cache; mutation & upload dilewatkan apa adanya.
+  // GraphQL query (POST) di-cache; mutation lain & upload dilewatkan apa adanya.
   if (req.method === 'POST' && url.origin === self.location.origin && url.pathname.endsWith('/api/graphql')) {
     event.respondWith(graphqlQuery(event, req))
     return
@@ -106,9 +109,10 @@ async function gqlKey(bodyText) {
 }
 
 /**
- * Cache untuk GraphQL query: segar -> sajikan cache + perbarui di belakang layar;
- * kedaluwarsa -> coba jaringan dulu, jatuh ke cache bila jaringan gagal.
- * Mutation tidak pernah sampai sini (difilter di bawah); respons error tidak disimpan.
+ * Cache untuk GraphQL query (+ mutation fetchChapterPages): segar -> sajikan
+ * cache + perbarui di belakang layar; kedaluwarsa -> coba jaringan dulu,
+ * jatuh ke cache bila jaringan gagal. Mutation lain tidak pernah sampai sini
+ * (difilter di bawah); respons error tidak disimpan.
  */
 async function graphqlQuery(event, req) {
   let bodyText
@@ -124,7 +128,11 @@ async function graphqlQuery(event, req) {
     return fetch(req) // bukan JSON (mis. multipart upload) -> lewatkan
   }
   const q = typeof body?.query === 'string' ? body.query.trimStart() : ''
-  if (!q.startsWith('query')) return fetch(req) // mutation -> selalu jaringan
+  // Yang di-cache: semua query, PLUS mutation fetchChapterPages (daftar URL
+  // halaman — hanya membaca, stabil per chapter). Mutation lain punya efek
+  // samping (simpan progres, unduhan, refresh) -> selalu jaringan.
+  const cacheable = q.startsWith('query') || (q.startsWith('mutation') && q.includes('fetchChapterPages'))
+  if (!cacheable) return fetch(req)
   const key = await gqlKey(bodyText)
   const cache = await caches.open(API)
   const hit = await cache.match(key, { ignoreVary: true })

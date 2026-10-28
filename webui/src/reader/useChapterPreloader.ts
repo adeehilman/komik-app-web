@@ -7,6 +7,10 @@ import { useEffect, useState } from 'react'
  */
 const CONCURRENCY = 3
 const RETRY_DELAYS_MS = [1000, 3000, 8000]
+// Batas satu percobaan unduh: tanpa ini, koneksi yang menggantung (header
+// diterima, body tak kunjung selesai — pernah terlihat di jalur proxy)
+// memblokir worker selamanya dan indikator preload macet di 1/27.
+const FETCH_TIMEOUT_MS = 30000
 
 export interface PreloadProgress {
   loaded: number
@@ -36,8 +40,16 @@ export function useChapterPreloader(pages: string[], startIndex: number, enabled
     const loadOne = async (i: number) => {
       for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
         if (controller.signal.aborted) return
+        // Sinyal timeout dibuat per percobaan (sinyal yang sudah abort tidak
+        // bisa dipakai ulang); digabung dengan sinyal batal global bila didukung.
+        const timeout =
+          typeof AbortSignal.timeout === 'function' ? AbortSignal.timeout(FETCH_TIMEOUT_MS) : undefined
+        const signal =
+          timeout && typeof AbortSignal.any === 'function'
+            ? AbortSignal.any([controller.signal, timeout])
+            : controller.signal
         try {
-          const res = await fetch(pages[i], { signal: controller.signal })
+          const res = await fetch(pages[i], { signal })
           if (res.ok) {
             await res.blob() // tunggu seluruh gambar diterima (dan tersimpan di cache)
             done.add(i)
