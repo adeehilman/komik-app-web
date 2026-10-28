@@ -26,6 +26,7 @@ export interface SettingsSchema {
   mihonweb_browse_langs: string // bahasa extension yang ditampilkan, dipisah koma (W-05)
   mihonweb_updates_last_seen: number // detik epoch; badge chapter baru di tab Updates (W-12)
   mihonweb_reader_preload_all: boolean // muat seluruh halaman chapter yang dibuka (W-16)
+  mihonweb_fcm_tokens: string // token FCM perangkat langganan push (array JSON; pengecualian §3, 2026-10-27)
 }
 
 export type SettingKey = keyof SettingsSchema
@@ -57,6 +58,7 @@ export const SETTINGS_DEFAULTS: SettingsSchema = {
   mihonweb_browse_langs: 'all,id,en',
   mihonweb_updates_last_seen: 0,
   mihonweb_reader_preload_all: true,
+  mihonweb_fcm_tokens: '',
 }
 
 export const META_PREFIX = 'mihonweb_'

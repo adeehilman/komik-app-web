@@ -4,6 +4,10 @@
  * - Asset ber-hash (/assets/*): cache-first, tidak kedaluwarsa (nama file berubah tiap build).
  * - Halaman chapter, cover, ikon extension: cache-first dengan batas umur & jumlah entri.
  * - GraphQL & API lain: TIDAK di-cache (selalu jaringan).
+ * - FCM (pengecualian aturan §3, 2026-10-27): handler push chapter baru, digabung ke
+ *   file ini karena dua service worker dengan scope yang sama saling menggantikan.
+ *   VERSION sengaja tidak naik — strategi cache tidak berubah, jadi cache gambar
+ *   tidak ikut terhapus saat service worker diperbarui.
  */
 const VERSION = 'v2'
 const SHELL = `mihon-shell-${VERSION}`
@@ -13,10 +17,10 @@ const ICONS = `mihon-icons-${VERSION}`
 const ALL = [SHELL, PAGES, COVERS, ICONS]
 
 // Jumlah entri maksimum per cache (yang terlama dibuang lebih dulu).
-const LIMITS = { [SHELL]: 60, [PAGES]: 800, [COVERS]: 600, [ICONS]: 300 }
+const LIMITS = { [SHELL]: 60, [PAGES]: 800, [COVERS]: 1000, [ICONS]: 300 }
 // Umur maksimum entri.
 const DAY = 24 * 60 * 60 * 1000
-const MAX_AGE = { [PAGES]: 30 * DAY, [COVERS]: 7 * DAY, [ICONS]: 30 * DAY }
+const MAX_AGE = { [PAGES]: 30 * DAY, [COVERS]: 30 * DAY, [ICONS]: 30 * DAY }
 
 const CACHED_AT = 'x-sw-cached-at'
 
@@ -116,3 +120,53 @@ async function trim(cache, name) {
   const keys = await cache.keys()
   for (let i = 0; i < keys.length - max; i++) await cache.delete(keys[i])
 }
+
+/* ---------- FCM: push chapter baru (pengecualian §3, 2026-10-27) ---------- */
+
+// importScripts dibungkus try/catch: bila gstatic tak terjangkau, blok ini dilewati
+// dan fungsi cache di atas tetap jalan normal.
+try {
+  importScripts('https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js')
+  importScripts('https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js')
+  firebase.initializeApp({
+    apiKey: 'AIzaSyCv3UkOtVGQW3raqM3bdirf2o-sbAmFQzM',
+    authDomain: 'komik-2a833.firebaseapp.com',
+    projectId: 'komik-2a833',
+    storageBucket: 'komik-2a833.firebasestorage.app',
+    messagingSenderId: '1015246074367',
+    appId: '1:1015246074367:web:2bd553b40eb343bdb277ca',
+  })
+  // Pesan data-only: tampilkan sendiri supaya format & klik konsisten.
+  firebase.messaging().onBackgroundMessage((payload) => {
+    const d = payload.data || {}
+    const icon = new URL('icon-192.png', self.registration.scope).href
+    self.registration.showNotification(d.title || 'Chapter baru', {
+      body: d.body || '',
+      icon,
+      data: { url: d.url || '#/updates' },
+    })
+  })
+} catch (e) {
+  // FCM nonaktif; cache tetap jalan.
+}
+
+// Di luar blok try: klik notifikasi harus jalan walau Firebase gagal dimuat
+// (mis. notifikasi dari pesan foreground yang ditampilkan halaman).
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  const target = new URL((event.notification.data && event.notification.data.url) || '#/updates', self.registration.scope).href
+  event.waitUntil(
+    (async () => {
+      const list = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+      for (const c of list) {
+        if (c.url.startsWith(self.registration.scope)) {
+          try {
+            await c.navigate(target)
+          } catch (e) {}
+          return c.focus()
+        }
+      }
+      return self.clients.openWindow(target)
+    })(),
+  )
+})

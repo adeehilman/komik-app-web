@@ -5,6 +5,7 @@ import { TopBar } from '../components/TopBar'
 import { useSetting } from '../settings/useSetting'
 import type { SettingsSchema } from '../settings/schema'
 import { DeviceStorage } from '../components/DeviceStorage'
+import { FcmSettings } from '../components/FcmSettings'
 
 /*
  * Update library berjalan di SERVER (tetap jalan walau iPhone mati).
@@ -137,6 +138,8 @@ export function SettingsPage() {
           ))}
         </select>
       </label>
+
+      <FcmSettings />
 
       <DeviceStorage />
     </div>
