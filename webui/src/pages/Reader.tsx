@@ -229,7 +229,6 @@ function Reader({ chapterId }: { chapterId: number }) {
 
   return (
     <div className={`reader bg-${bg}`} style={{ backgroundColor: BG[bg] }}>
-      <div className="reader-top-glass" aria-hidden="true" />
       {error && (
         <div className="reader-center">
           <p className="error-text">{(error as Error).message}</p>
