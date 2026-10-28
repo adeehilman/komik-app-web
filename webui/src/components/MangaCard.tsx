@@ -1,5 +1,7 @@
 import { serverPath } from '../api/base'
+import { COVER_FALLBACK } from '../coverFallback'
 import type { ReactNode } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Icon } from './Icon'
 import { useLongPress } from './useLongPress'
@@ -42,16 +44,26 @@ export function MangaCard({
     () => (selectionMode ? onToggleSelect?.(manga.id) : navigate(`/manga/${manga.id}`)),
   )
 
+  // Cover pengganti hardcode untuk judul yang thumbnail sumbernya mati.
+  // Tahap: orig -> fallback (bila ada) -> placeholder. Reset tiap ganti judul.
+  const fallback = COVER_FALLBACK[manga.id]
+  const [stage, setStage] = useState<'orig' | 'fallback' | 'hidden'>('orig')
+  useEffect(() => setStage('orig'), [manga.id])
+  const origSrc = manga.thumbnailUrl ? serverPath(manga.thumbnailUrl) : undefined
+  const fallbackSrc = fallback ? serverPath(fallback) : undefined
+  const coverSrc = stage === 'orig' ? (origSrc ?? fallbackSrc) : stage === 'fallback' ? fallbackSrc : undefined
+
   const cover = (
     <div className={`card-cover ${dimmed ? 'dimmed' : ''}`}>
-      {manga.thumbnailUrl ? (
+      {coverSrc ? (
         <img
-          src={manga.thumbnailUrl ? serverPath(manga.thumbnailUrl) : manga.thumbnailUrl}
+          src={coverSrc}
           alt=""
           loading="lazy"
           decoding="async"
-          // CDN source kadang 404/522 → tampilkan placeholder abu-abu, bukan ikon gambar rusak.
-          onError={(e) => (e.currentTarget.style.visibility = 'hidden')}
+          // Thumbnail sumber kadang 500 (sumber 403/404) -> coba cover pengganti,
+          // baru placeholder abu-abu bila keduanya gagal.
+          onError={() => setStage(stage === 'orig' && origSrc && fallbackSrc ? 'fallback' : 'hidden')}
         />
       ) : (
         <div className="card-cover-placeholder" />

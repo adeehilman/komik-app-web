@@ -1,6 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { fetchLibrary, setMangasCategory, setMangasInLibrary } from '../api/library'
+import { serverPath } from '../api/base'
+import { COVER_FALLBACK } from '../coverFallback'
 import type { CategoryItem, MangaItem } from '../api/library'
 import { enqueueDownloads, fetchChapterIdsForMangas, updateChapters } from '../api/chapter'
 import { toNumber } from '../api/client'
@@ -95,6 +97,35 @@ export function LibraryPage() {
   const columns = isLandscape ? colsLandscape : colsPortrait
   const mangas = data?.mangas
   const selectionMode = selected.length > 0
+
+  // Pemanasan cover perangkat: isi cache SW untuk cover yang belum tersimpan
+  // (thumbnail utama + cover pengganti), supaya scroll & offline instan.
+  // Hanya yang belum di-cache yang diunduh; sisanya cache-hit tanpa jaringan.
+  useEffect(() => {
+    if (!mangas || typeof caches === 'undefined') return
+    let cancelled = false
+    void (async () => {
+      const urls: string[] = []
+      for (const m of mangas) {
+        if (m.thumbnailUrl) urls.push(serverPath(m.thumbnailUrl))
+        const fb = COVER_FALLBACK[m.id]
+        if (fb) urls.push(serverPath(fb))
+      }
+      const missing: string[] = []
+      for (const u of urls) {
+        if (cancelled) return
+        try {
+          const hit = await caches.match(u, { ignoreSearch: true })
+          if (!hit) missing.push(u)
+        } catch { /* abaikan, coba unduh langsung */ }
+      }
+      // Unduh yang hilang, 6 bersamaan; gagal = abaikan (dicoba lagi lain kali).
+      for (let i = 0; i < missing.length && !cancelled; i += 6) {
+        await Promise.all(missing.slice(i, i + 6).map((u) => fetch(u).catch(() => undefined)))
+      }
+    })()
+    return () => { cancelled = true }
+  }, [mangas])
 
   // Tab kategori: Default hanya tampil kalau berisi atau satu-satunya kategori (seperti Mihon).
   const categories: CategoryItem[] = useMemo(() => {

@@ -52,6 +52,7 @@ function route(url) {
   const p = url.pathname
   if (/\/api\/v1\/manga\/\d+\/chapter\/\d+\/page\/\d+$/.test(p)) return PAGES
   if (/\/api\/v1\/manga\/\d+\/thumbnail$/.test(p)) return COVERS
+  if (p.includes('/covers-fallback/')) return COVERS
   if (p.includes('/api/v1/extension/icon/')) return ICONS
   if (p.includes('/api/')) return null
   if (p.includes('/assets/')) return 'asset'

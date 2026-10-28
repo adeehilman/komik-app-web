@@ -1,0 +1,61 @@
+/**
+ * Cover pengganti hardcode untuk judul yang thumbnail sumbernya mati
+ * (Suwayomi 500: sumber 403/404/timeout). File gambarnya TIDAK di repo
+ * (repo ini publik) — melainkan di ~/workspace/komik-covers/ di VPS dan
+ * disajikan nginx di /covers-fallback/<id>.jpg.
+ *
+ * Dipakai MangaCard sebagai cadangan saat thumbnail utama gagal dimuat.
+ * Daftar ini dibuat dari hasil warming 2026-10-28 (50 judul gagal persisten).
+ */
+export const COVER_FALLBACK: Record<number, string> = {
+  56: '/covers-fallback/56.webp',
+  63: '/covers-fallback/63.jpg',
+  65: '/covers-fallback/65.jpg',
+  68: '/covers-fallback/68.webp',
+  84: '/covers-fallback/84.jpg',
+  85: '/covers-fallback/85.jpg',
+  87: '/covers-fallback/87.webp',
+  94: '/covers-fallback/94.webp',
+  101: '/covers-fallback/101.jpg',
+  103: '/covers-fallback/103.webp',
+  113: '/covers-fallback/113.jpg',
+  120: '/covers-fallback/120.jpg',
+  121: '/covers-fallback/121.png',
+  126: '/covers-fallback/126.webp',
+  127: '/covers-fallback/127.jpg',
+  128: '/covers-fallback/128.jpg',
+  129: '/covers-fallback/129.webp',
+  130: '/covers-fallback/130.jpg',
+  131: '/covers-fallback/131.png',
+  133: '/covers-fallback/133.webp',
+  134: '/covers-fallback/134.jpg',
+  135: '/covers-fallback/135.jpg',
+  136: '/covers-fallback/136.jpg',
+  137: '/covers-fallback/137.jpg',
+  144: '/covers-fallback/144.jpg',
+  145: '/covers-fallback/145.jpg',
+  146: '/covers-fallback/146.jpg',
+  147: '/covers-fallback/147.webp',
+  148: '/covers-fallback/148.webp',
+  149: '/covers-fallback/149.webp',
+  150: '/covers-fallback/150.png',
+  151: '/covers-fallback/151.webp',
+  152: '/covers-fallback/152.jpg',
+  153: '/covers-fallback/153.png',
+  154: '/covers-fallback/154.png',
+  155: '/covers-fallback/155.jpg',
+  156: '/covers-fallback/156.jpg',
+  157: '/covers-fallback/157.jpg',
+  158: '/covers-fallback/158.webp',
+  159: '/covers-fallback/159.jpg',
+  160: '/covers-fallback/160.jpg',
+  161: '/covers-fallback/161.webp',
+  162: '/covers-fallback/162.webp',
+  163: '/covers-fallback/163.webp',
+  164: '/covers-fallback/164.jpg',
+  188: '/covers-fallback/188.webp',
+  189: '/covers-fallback/189.jpg',
+  191: '/covers-fallback/191.webp',
+  197: '/covers-fallback/197.jpg',
+  198: '/covers-fallback/198.jpg',
+}
