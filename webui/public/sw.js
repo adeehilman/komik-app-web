@@ -224,6 +224,8 @@ try {
     self.registration.showNotification(d.title || 'Chapter baru', {
       body: d.body || '',
       icon,
+      // Gambar cover komik (bila ada). Diabaikan platform yang tak mendukungnya.
+      image: d.image || undefined,
       data: { url: d.url || '#/updates' },
     })
   })

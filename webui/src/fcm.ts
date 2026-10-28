@@ -124,6 +124,9 @@ export async function initForegroundMessages(): Promise<void> {
       reg.showNotification(title, {
         body,
         icon: new URL('icon-192.png', document.baseURI).href,
+        // Spread (bukan properti langsung) supaya TS lib lama yang belum
+        // mengenal NotificationOptions.image tidak menolak kompilasi.
+        ...(d.image ? { image: d.image } : {}),
         data: { url: d.url ?? '#/updates' },
       }),
     )
