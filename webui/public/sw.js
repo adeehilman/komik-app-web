@@ -4,7 +4,11 @@
  * - Asset ber-hash (/assets/*): cache-first, tidak kedaluwarsa (nama file berubah tiap build).
  * - Halaman chapter, cover, ikon extension: cache-first dengan batas umur & jumlah entri.
  * - GraphQL query (baca data: library, chapter, halaman): stale-while-revalidate,
- *   jadi halaman data tetap terbuka dari cache saat backend mati. Mutation
+ *   jadi halaman data tetap terbuka dari cache saat backend mati. PENGECUALIAN:
+ *   query progres (ReaderChapter, MangaChapters) network-first — SWR menyajikan
+ *   cache basi sebagai respons selesai, sehingga reader mengunci lastPageRead
+ *   lama dan membuka ulang dari halaman 1 padahal server sudah punya progres
+ *   baru (terbukti 3x pengujian). Offline tetap jatuh ke cache. Mutation
  *   TIDAK di-cache — KECUALI fetchChapterPages: mutation itu hanya membaca
  *   daftar URL halaman (stabil per chapter), dan reader tidak bisa tampil
  *   tanpa daftar itu, jadi responsnya di-cache dengan pola yang sama.
@@ -152,6 +156,16 @@ async function graphqlQuery(event, req) {
       return res
     })
     .catch(() => null)
+  // Query progres: network-first. SWR di bawah menyajikan cache basi sebagai
+  // respons selesai — React Query menganggapnya data segar, efek posisi awal
+  // reader mengunci lastPageRead lama, dan chapter dibuka ulang dari halaman 1
+  // walau server sudah menyimpan progres baru. Offline: jatuh ke cache.
+  if (/query\s+(ReaderChapter|MangaChapters)\b/.test(q)) {
+    const res = await network
+    if (res) return res
+    if (hit) return hit
+    return Response.error()
+  }
   if (hit && !isExpired(hit, API)) {
     event.waitUntil(network)
     return hit
