@@ -9,6 +9,7 @@ function formatMB(bytes: number): string {
 
 export function DeviceStorage() {
   const [usage, setUsage] = useState('menghitung…')
+  const [persisted, setPersisted] = useState<boolean | null>(null)
   const [busy, setBusy] = useState(false)
   const active = 'serviceWorker' in navigator && navigator.serviceWorker.controller !== null
   const supported = typeof caches !== 'undefined'
@@ -20,6 +21,12 @@ export function DeviceStorage() {
       else setUsage(est.quota ? `${formatMB(est.usage)} dari ${formatMB(est.quota)}` : formatMB(est.usage))
     } catch {
       setUsage('tidak tersedia')
+    }
+    try {
+      const p = await navigator.storage?.persisted?.()
+      if (typeof p === 'boolean') setPersisted(p)
+    } catch {
+      // Abaikan: status persisten hanya info tambahan.
     }
   }
 
@@ -48,6 +55,7 @@ export function DeviceStorage() {
           <span className="list-item-title">Cache gambar & aplikasi</span>
           <span className="list-item-subtitle">
             {active ? 'Aktif' : 'Belum aktif — tutup lalu buka ulang aplikasi'} · {usage}
+            {persisted === true ? ' · persisten' : persisted === false ? ' · bisa dihapus sistem bila penuh' : ''}
           </span>
         </span>
         <button type="button" className="btn btn-text" disabled={busy || !supported} onClick={clear}>

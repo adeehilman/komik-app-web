@@ -52,14 +52,80 @@ export interface ChapterPatch {
   lastPageRead?: number
 }
 
-export async function updateChapters(ids: number[], patch: ChapterPatch): Promise<void> {
-  if (ids.length === 0) return
+/**
+ * Antrean progres offline: bila backend mati saat menyimpan progres baca,
+ * patch disimpan di localStorage dan dikirim ulang saat online lagi — jadi
+ * progres tidak hilang walau aplikasi ditutup dalam keadaan offline.
+ * Patch bersifat absolut (lastPageRead/isRead), jadi pengiriman ulang berurutan
+ * aman: server berakhir di patch terbaru.
+ */
+const OUTBOX_KEY = 'mihon-outbox'
+
+interface OutboxEntry {
+  ids: number[]
+  patch: ChapterPatch
+  ts: number
+}
+
+function readOutbox(): OutboxEntry[] {
+  try {
+    const raw = JSON.parse(localStorage.getItem(OUTBOX_KEY) || '[]') as OutboxEntry[]
+    return Array.isArray(raw) ? raw : []
+  } catch {
+    return []
+  }
+}
+
+function writeOutbox(list: OutboxEntry[]) {
+  try {
+    localStorage.setItem(OUTBOX_KEY, JSON.stringify(list.slice(-50)))
+  } catch {
+    // localStorage penuh/nonaktif: progres tetap dicoba ulang oleh pemanggil.
+  }
+}
+
+/** Kirim antrean dari yang tertua; berhenti di kegagalan pertama. */
+export async function flushOutbox(): Promise<void> {
+  let list = readOutbox()
+  while (list.length > 0) {
+    const entry = list[0]
+    try {
+      await rawUpdateChapters(entry.ids, entry.patch)
+    } catch {
+      return
+    }
+    list = list.slice(1)
+    writeOutbox(list)
+  }
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('online', () => {
+    flushOutbox().catch(() => {})
+  })
+}
+
+async function rawUpdateChapters(ids: number[], patch: ChapterPatch): Promise<void> {
   await gql(
     `mutation UpdateChapters($input: UpdateChaptersInput!) {
       updateChapters(input: $input) { clientMutationId }
     }`,
     { input: { ids, patch } },
   )
+}
+
+export async function updateChapters(ids: number[], patch: ChapterPatch): Promise<void> {
+  if (ids.length === 0) return
+  try {
+    await rawUpdateChapters(ids, patch)
+    // Sukses: sekalian kuras antrean lama (mis. dari sesi offline sebelumnya).
+    flushOutbox().catch(() => {})
+  } catch (err) {
+    const list = readOutbox()
+    list.push({ ids, patch, ts: Date.now() })
+    writeOutbox(list)
+    throw err
+  }
 }
 
 export async function enqueueDownloads(ids: number[]): Promise<void> {

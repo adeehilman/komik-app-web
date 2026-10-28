@@ -3,7 +3,10 @@
  * - App shell: stale-while-revalidate (buka instan, diperbarui di belakang layar).
  * - Asset ber-hash (/assets/*): cache-first, tidak kedaluwarsa (nama file berubah tiap build).
  * - Halaman chapter, cover, ikon extension: cache-first dengan batas umur & jumlah entri.
- * - GraphQL & API lain: TIDAK di-cache (selalu jaringan).
+ * - GraphQL query (baca data: library, chapter, halaman): stale-while-revalidate,
+ *   jadi halaman data tetap terbuka dari cache saat backend mati. Mutation
+ *   (simpan progres, unduhan, dsb) TIDAK PERNAH di-cache — selalu jaringan.
+ *   VERSION sengaja tetap v2: cache gambar yang sudah ada tidak boleh terhapus.
  * - FCM (pengecualian aturan §3, 2026-10-27): handler push chapter baru, digabung ke
  *   file ini karena dua service worker dengan scope yang sama saling menggantikan.
  *   VERSION sengaja tidak naik — strategi cache tidak berubah, jadi cache gambar
@@ -14,13 +17,14 @@ const SHELL = `mihon-shell-${VERSION}`
 const PAGES = `mihon-pages-${VERSION}`
 const COVERS = `mihon-covers-${VERSION}`
 const ICONS = `mihon-icons-${VERSION}`
-const ALL = [SHELL, PAGES, COVERS, ICONS]
+const API = `mihon-api-${VERSION}`
+const ALL = [SHELL, PAGES, COVERS, ICONS, API]
 
 // Jumlah entri maksimum per cache (yang terlama dibuang lebih dulu).
-const LIMITS = { [SHELL]: 60, [PAGES]: 800, [COVERS]: 1000, [ICONS]: 300 }
+const LIMITS = { [SHELL]: 60, [PAGES]: 1500, [COVERS]: 1000, [ICONS]: 300, [API]: 300 }
 // Umur maksimum entri.
 const DAY = 24 * 60 * 60 * 1000
-const MAX_AGE = { [PAGES]: 30 * DAY, [COVERS]: 30 * DAY, [ICONS]: 30 * DAY }
+const MAX_AGE = { [PAGES]: 30 * DAY, [COVERS]: 30 * DAY, [ICONS]: 30 * DAY, [API]: 30 * DAY }
 
 const CACHED_AT = 'x-sw-cached-at'
 
@@ -53,8 +57,13 @@ function route(url) {
 
 self.addEventListener('fetch', (event) => {
   const req = event.request
-  if (req.method !== 'GET') return
   const url = new URL(req.url)
+  // GraphQL query (POST) di-cache; mutation & upload dilewatkan apa adanya.
+  if (req.method === 'POST' && url.origin === self.location.origin && url.pathname.endsWith('/api/graphql')) {
+    event.respondWith(graphqlQuery(event, req))
+    return
+  }
+  if (req.method !== 'GET') return
   const kind = route(url)
   if (!kind) return
   if (kind === 'shell') {
@@ -79,6 +88,69 @@ async function cacheFirst(event, req, name, key) {
     if (hit) return hit // jaringan putus: pakai yang kedaluwarsa daripada gagal
     throw err
   }
+}
+
+/** Kunci cache untuk sebuah query GraphQL: hash isi body (query + variables). */
+async function gqlKey(bodyText) {
+  if (self.crypto && crypto.subtle) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(bodyText))
+    const hex = [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('')
+    return `${self.location.origin}/__gql__/${hex}`
+  }
+  let h = 0x811c9dc5
+  for (let i = 0; i < bodyText.length; i++) {
+    h ^= bodyText.charCodeAt(i)
+    h = Math.imul(h, 0x01000193)
+  }
+  return `${self.location.origin}/__gql__/${(h >>> 0).toString(16)}`
+}
+
+/**
+ * Cache untuk GraphQL query: segar -> sajikan cache + perbarui di belakang layar;
+ * kedaluwarsa -> coba jaringan dulu, jatuh ke cache bila jaringan gagal.
+ * Mutation tidak pernah sampai sini (difilter di bawah); respons error tidak disimpan.
+ */
+async function graphqlQuery(event, req) {
+  let bodyText
+  try {
+    bodyText = await req.clone().text()
+  } catch (e) {
+    return fetch(req)
+  }
+  let body
+  try {
+    body = JSON.parse(bodyText)
+  } catch (e) {
+    return fetch(req) // bukan JSON (mis. multipart upload) -> lewatkan
+  }
+  const q = typeof body?.query === 'string' ? body.query.trimStart() : ''
+  if (!q.startsWith('query')) return fetch(req) // mutation -> selalu jaringan
+  const key = await gqlKey(bodyText)
+  const cache = await caches.open(API)
+  const hit = await cache.match(key, { ignoreVary: true })
+  const network = fetch(req)
+    .then(async (res) => {
+      if (res.ok) {
+        try {
+          const json = await res.clone().json()
+          if (!json.errors || json.errors.length === 0) {
+            event.waitUntil(store(cache, API, key, res.clone()))
+          }
+        } catch (e) {
+          // Bukan JSON: jangan simpan.
+        }
+      }
+      return res
+    })
+    .catch(() => null)
+  if (hit && !isExpired(hit, API)) {
+    event.waitUntil(network)
+    return hit
+  }
+  const res = await network
+  if (res) return res
+  if (hit) return hit // jaringan putus: data kedaluwarsa lebih baik daripada error
+  return Response.error()
 }
 
 async function staleWhileRevalidate(event, req) {

@@ -135,6 +135,22 @@ function Reader({ chapterId }: { chapterId: number }) {
   const preload = useChapterPreloader(pageList, startIndex + 1, preloadAll && index !== null)
   const preloading = preloadAll && preload.total > 0 && preload.loaded + preload.failed < preload.total
 
+  /* ---------- Muat penuh chapter berikutnya ke cache perangkat ---------- */
+  // Daftar halaman chapter berikutnya diambil lebih awal (separuh chapter),
+  // agar sempat terunduh penuh sebelum pengguna sampai di ujung — tanpa ini
+  // hanya 6 gambar pertama yang di-prefetch (efek preload di atas). Diam
+  // bila preloadAll mati; diam juga bila tidak ada chapter berikutnya.
+  const halfway = total > 0 && index !== null && index >= Math.floor(total / 2)
+  const nextPagesQuery = useQuery({
+    queryKey: ['chapterPages', next?.id],
+    queryFn: () => fetchChapterPages(next?.id as number),
+    staleTime: Infinity,
+    gcTime: 30 * 60 * 1000,
+    enabled: next !== undefined && halfway,
+  })
+  const nextPageList = useMemo(() => nextPagesQuery.data ?? [], [nextPagesQuery.data])
+  useChapterPreloader(nextPageList, 0, preloadAll && nextPageList.length > 0)
+
   /* ---------- Navigasi ---------- */
   const goChapter = useCallback(
     (id: number | undefined) => {
@@ -387,7 +403,7 @@ function Reader({ chapterId }: { chapterId: number }) {
           <input type="checkbox" checked={preloadAll} onChange={(e) => setPreloadAll(e.target.checked)} />
           <span className="list-item-text">
             <span className="list-item-title">Muat seluruh chapter</span>
-            <span className="list-item-subtitle">Semua halaman diunduh saat chapter dibuka (±20 MB per chapter)</span>
+            <span className="list-item-subtitle">Semua halaman chapter ini dan chapter berikutnya diunduh di latar (±20 MB per chapter)</span>
           </span>
         </label>
 
