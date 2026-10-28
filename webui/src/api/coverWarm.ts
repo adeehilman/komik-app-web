@@ -20,22 +20,32 @@ export interface WarmProgress {
   bytes: number
 }
 
+export interface WarmOptions {
+  /** Dipanggil tiap batas batch; true = berhenti (tombol Batal). */
+  isCancelled?: () => boolean
+  /** Sinyal abort global: membatalkan fetch yang sedang berjalan seketika. */
+  signal?: AbortSignal
+}
+
 /**
  * Isi cache perangkat untuk cover yang belum tersimpan (saja).
  * Yang sudah di-cache = cache-hit tanpa jaringan. Unduhan 6 bersamaan;
  * gagal = dilewati (dicoba lagi saat cover itu dibuka). Mengonsumsi body
  * supaya unduhan tuntas walau service worker sedang diperbarui.
- * Sengaja tanpa AbortController: tetap jalan sampai selesai walau pengguna
- * pindah halaman. Berhenti hanya bila isCancelled() true (tombol Batal)
- * atau halaman ditutup (JS ikut berhenti).
+ * Sengaja tetap jalan walau pengguna pindah halaman. Berhenti hanya bila
+ * isCancelled() true / signal abort (tombol Batal) atau halaman ditutup
+ * (JS ikut berhenti). Tiap fetch dibatasi 30 detik supaya satu cover yang
+ * menggantung tidak memblokir antrean (dan tidak menunda Batal) selamanya.
  */
 export async function warmCovers(
   urls: string[],
   onProgress?: (p: WarmProgress) => void,
-  isCancelled?: () => boolean,
+  options?: WarmOptions,
 ): Promise<WarmProgress & { cancelled: boolean }> {
   const progress: WarmProgress = { done: 0, total: urls.length, failed: 0, bytes: 0 }
-  const cancelled = () => isCancelled?.() ?? false
+  const isCancelled = options?.isCancelled
+  const signal = options?.signal
+  const cancelled = () => (isCancelled?.() ?? false) || (signal?.aborted ?? false)
   if (typeof caches === 'undefined') return { ...progress, cancelled: false }
   const missing: string[] = []
   for (const u of urls) {
@@ -56,15 +66,26 @@ export async function warmCovers(
     if (cancelled()) break
     await Promise.all(
       missing.slice(i, i + 6).map(async (u) => {
+        // Timeout 30 detik per cover + abort instan saat Batal ditekan.
+        const ctrl = new AbortController()
+        const timer = setTimeout(() => ctrl.abort(), 30000)
+        if (signal) {
+          if (signal.aborted) ctrl.abort()
+          else signal.addEventListener('abort', () => ctrl.abort(), { once: true })
+        }
         try {
-          const res = await fetch(u)
+          const res = await fetch(u, { signal: ctrl.signal })
           if (!res.ok) throw new Error(`HTTP ${res.status}`)
           const blob = await res.blob()
           progress.bytes += blob.size
-        } catch {
-          progress.failed += 1
-        } finally {
           progress.done += 1
+        } catch {
+          // Dibatalkan (bukan gagal): tidak dihitung gagal maupun selesai.
+          if (ctrl.signal.aborted && cancelled()) return
+          progress.failed += 1
+          progress.done += 1
+        } finally {
+          clearTimeout(timer)
           report()
         }
       }),

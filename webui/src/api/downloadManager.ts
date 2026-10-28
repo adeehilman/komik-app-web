@@ -36,6 +36,7 @@ const initial: DownloadState = {
 
 let state: DownloadState = initial
 let cancelFlag = false
+let abortCtrl: AbortController | null = null
 const listeners = new Set<() => void>()
 
 function setState(next: DownloadState) {
@@ -58,6 +59,8 @@ export function getDownloadState(): DownloadState {
 export async function startDownload(): Promise<void> {
   if (state.status === 'running') return
   cancelFlag = false
+  abortCtrl = new AbortController()
+  const signal = abortCtrl.signal
   setState({ ...initial, status: 'running' })
   try {
     const { mangas } = await fetchLibrary()
@@ -68,7 +71,7 @@ export async function startDownload(): Promise<void> {
       (p) => {
         setState({ ...state, done: p.done, total: p.total, failed: p.failed, bytes: p.bytes })
       },
-      () => cancelFlag,
+      { isCancelled: () => cancelFlag, signal },
     )
     setState({
       status: summary.cancelled ? 'cancelled' : 'done',
@@ -83,9 +86,10 @@ export async function startDownload(): Promise<void> {
   }
 }
 
-/** Minta berhenti di batas batch berikutnya (maksimal beberapa detik). */
+/** Berhenti seketika: batalkan fetch yang sedang berjalan + set flag. */
 export function cancelDownload(): void {
   cancelFlag = true
+  abortCtrl?.abort()
 }
 
 /** Hook komponen untuk membaca state manajer secara live. */
