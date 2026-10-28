@@ -213,6 +213,25 @@
 }
 
 /* Garis progres muat seluruh chapter (W-16) */
+/* Frosted strip exactly status-bar height: content stays full-bleed below it,
+   the blur never extends past the battery bar (FB-style top). Taps pass through. */
+.reader-top-glass {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-top, 0px);
+  z-index: 1;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0.28);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(140%);
+}
+
+.reader.bg-white .reader-top-glass {
+  background: rgba(255, 255, 255, 0.35);
+}
+
 .reader-preload-bar {
   position: absolute;
   top: 0;
