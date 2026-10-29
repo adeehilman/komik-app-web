@@ -156,11 +156,15 @@ async function graphqlQuery(event, req) {
       return res
     })
     .catch(() => null)
-  // Query progres: network-first. SWR di bawah menyajikan cache basi sebagai
-  // respons selesai — React Query menganggapnya data segar, efek posisi awal
-  // reader mengunci lastPageRead lama, dan chapter dibuka ulang dari halaman 1
-  // walau server sudah menyimpan progres baru. Offline: jatuh ke cache.
-  if (/query\s+(ReaderChapter|MangaChapters)\b/.test(q)) {
+  // Query sensitif kebasian: network-first. SWR di bawah menyajikan cache basi
+  // sebagai respons selesai — React Query menganggapnya data segar dan tak pernah
+  // membaca ulang hasil revalidasi di latar, sehingga:
+  // - ReaderChapter/MangaChapters: posisi awal reader mengunci lastPageRead lama
+  //   (chapter dibuka ulang dari halaman 1 walau server sudah menyimpan progres).
+  // - Library/RecentChapters/NewChapterCount: badge "belum dibaca" macet —
+  //   server sudah 0 tapi kartu masih menampilkan angka lama (dilaporkan 29 Okt).
+  // Offline: jatuh ke cache.
+  if (/query\s+(ReaderChapter|MangaChapters|Library|RecentChapters|NewChapterCount)\b/.test(q)) {
     const res = await network
     if (res) return res
     if (hit) return hit

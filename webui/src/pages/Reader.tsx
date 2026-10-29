@@ -146,13 +146,20 @@ function Reader({ chapterId }: { chapterId: number }) {
     return () => {
       const idx = indexRef.current
       const tot = totalRef.current
+      const refreshKeys = () => {
+        for (const key of ['chapters', 'library', 'history', 'updates', 'readerChapter']) {
+          queryClient.invalidateQueries({ queryKey: [key] })
+        }
+      }
       if (idx !== null && tot > 0 && idx !== lastSavedRef.current && (movedRef.current || idx !== startIndexRef.current)) {
         const page = Math.min(idx, tot - 1)
         const patch = idx >= tot - 1 ? { lastPageRead: page, isRead: true } : { lastPageRead: page }
-        updateChapters([chapterId], patch).catch(() => {})
-      }
-      for (const key of ['chapters', 'library', 'history', 'updates', 'readerChapter']) {
-        queryClient.invalidateQueries({ queryKey: [key] })
+        // Invalidasi langsung (tahan hang bila PATCH macet) + sekali lagi setelah
+        // PATCH mendarat, supaya refetch tak berpacu dengan PATCH yang masih di jalan.
+        refreshKeys()
+        updateChapters([chapterId], patch).then(refreshKeys).catch(() => {})
+      } else {
+        refreshKeys()
       }
     }
   }, [queryClient, chapterId])
