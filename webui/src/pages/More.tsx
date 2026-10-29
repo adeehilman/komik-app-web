@@ -13,6 +13,7 @@ interface AboutServerData {
 const ITEMS: Array<{ to: string; icon: IconName; title: string; subtitle: string }> = [
   { to: '/settings', icon: 'settings', title: 'Settings', subtitle: 'Update otomatis, download, reader' },
   { to: '/backup', icon: 'backup', title: 'Backup & restore', subtitle: 'Buat file .tachibk atau pulihkan' },
+  { to: '/migrasi', icon: 'flip', title: 'Migrasi', subtitle: 'Kelola judul ganda dari beberapa sumber' },
 ]
 
 export function MorePage() {

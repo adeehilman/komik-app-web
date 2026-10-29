@@ -12,6 +12,7 @@ import { ReaderRoute } from './pages/Reader'
 import { MorePage } from './pages/More'
 import { SettingsPage } from './pages/Settings'
 import { BackupPage } from './pages/Backup'
+import { MigrationPage } from './pages/Migration'
 import './theme/tokens.css'
 
 const queryClient = new QueryClient({
@@ -61,6 +62,7 @@ function Shell() {
         <Route path="/more" element={<MorePage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/backup" element={<BackupPage />} />
+        <Route path="/migrasi" element={<MigrationPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       {showNav && <BottomNav />}
