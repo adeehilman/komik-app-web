@@ -102,11 +102,48 @@ export async function getCurrentToken(): Promise<string | null> {
   return fb.messaging().getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: reg })
 }
 
-/** Hapus token perangkat ini dari FCM. */
+/**
+ * Hapus token perangkat ini dari FCM — tanpa pernah menyentuh service worker
+ * default di /firebase-messaging-sw.js.
+ *
+ * Alasan (bug 2026-10-29): deleteToken() Firebase tanpa registrasi tersimpan
+ * memaksa SDK mendaftarkan service worker default itu. Di origin ini file root
+ * tersebut tidak bisa disajikan benar lewat funnel (funnel men-strip path
+ * /firebase-messaging-sw.js menjadi /, sehingga yang sampai ke browser adalah
+ * index.html, bukan JS) → toggle OFF gagal dengan
+ * "failed-service-worker-registration" dan token lama tidak pernah terhapus.
+ *
+ * Jadi: (1) prime dulu dengan getToken + registrasi sw.js yang sudah ada,
+ * supaya deleteToken memakai registrasi itu; (2) kalau deleteToken tetap
+ * gagal, hapus langganan push browser langsung via pushManager; (3) jangan
+ * pernah lempar error dari sini — pemanggil (toggle) tetap harus bisa
+ * membersihkan daftar token di server, karena itulah yang dipakai pengirim.
+ */
 export async function unsubscribeFcm(): Promise<void> {
   if (!fcmSupported()) return
-  const fb = await loadFirebase()
-  await fb.messaging().deleteToken()
+  try {
+    const reg = await navigator.serviceWorker.ready
+    const fb = await loadFirebase()
+    try {
+      await fb.messaging().getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: reg })
+    } catch {
+      // Token lama mungkin sudah tidak valid; lanjut ke penghapusan.
+    }
+    try {
+      await fb.messaging().deleteToken()
+      return
+    } catch {
+      // Jatuh ke fallback pushManager di bawah.
+    }
+    try {
+      const sub = await reg.pushManager.getSubscription()
+      if (sub) await sub.unsubscribe()
+    } catch {
+      // Sudah diupayakan; daftar token server tetap dibersihkan pemanggil.
+    }
+  } catch {
+    // Jangan gagalkan toggle OFF karena urusan FCM di browser.
+  }
 }
 
 let foregroundInit = false
