@@ -53,8 +53,10 @@ export function FcmSettings() {
     try {
       if (on) {
         const token = await subscribeFcm()
-        const list = parseTokens(rawTokens)
-        if (!list.includes(token)) await setTokens(JSON.stringify([...list, token]))
+        // Satu pengguna = satu perangkat: ganti daftar, jangan ditambah.
+        // Kalau tidak, token lama (mis. dari instalasi PWA sebelumnya) tetap
+        // tinggal dan pengirim mengirim ke dua token sekaligus (notif ganda).
+        await setTokens(JSON.stringify([token]))
       } else {
         await unsubscribeFcm()
         await setTokens(JSON.stringify([]))
