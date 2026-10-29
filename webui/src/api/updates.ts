@@ -5,7 +5,7 @@ import type { ChapterItem } from './chapter'
 /* ---------- Daftar chapter terbaru (tab Updates) ---------- */
 
 export interface UpdateEntry extends ChapterItem {
-  manga: { id: number; title: string; thumbnailUrl: string | null }
+  manga: { id: number; title: string; thumbnailUrl: string | null; unreadCount: number }
 }
 
 export const UPDATES_PAGE_SIZE = 50
@@ -19,7 +19,7 @@ export async function fetchRecentChapters(offset: number): Promise<{ items: Upda
         first: $first
         offset: $offset
       ) {
-        nodes { ${CHAPTER_FIELDS} manga { id title thumbnailUrl } }
+        nodes { ${CHAPTER_FIELDS} manga { id title thumbnailUrl unreadCount } }
         pageInfo { hasNextPage }
       }
     }`,
