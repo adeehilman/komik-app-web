@@ -163,8 +163,11 @@ async function graphqlQuery(event, req) {
   //   (chapter dibuka ulang dari halaman 1 walau server sudah menyimpan progres).
   // - Library/RecentChapters/NewChapterCount: badge "belum dibaca" macet —
   //   server sudah 0 tapi kartu masih menampilkan angka lama (dilaporkan 29 Okt).
+  // - LibraryUpdateStatus: bar "Memperbarui…" hantu — SWR menyajikan cache
+  //   isRunning:true dari update jam-jaman sebelumnya, sehingga tiap buka PWA
+  //   selalu terlihat sedang update padahal server idle (dilaporkan 30 Okt).
   // Offline: jatuh ke cache.
-  if (/query\s+(ReaderChapter|MangaChapters|Library|RecentChapters|NewChapterCount)\b/.test(q)) {
+  if (/query\s+(ReaderChapter|MangaChapters|Library|RecentChapters|NewChapterCount|LibraryUpdateStatus)\b/.test(q)) {
     const res = await network
     if (res) return res
     if (hit) return hit
