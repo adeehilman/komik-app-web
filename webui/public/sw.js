@@ -166,8 +166,11 @@ async function graphqlQuery(event, req) {
   // - LibraryUpdateStatus: bar "Memperbarui…" hantu — SWR menyajikan cache
   //   isRunning:true dari update jam-jaman sebelumnya, sehingga tiap buka PWA
   //   selalu terlihat sedang update padahal server idle (dilaporkan 30 Okt).
+  // - LastUpdate: teks "Terakhir diperbarui: 20 jam lalu" basi — SWR menyajikan
+  //   timestamp lama di halaman Updates padahal server baru saja update
+  //   (dilaporkan 31 Okt).
   // Offline: jatuh ke cache.
-  if (/query\s+(ReaderChapter|MangaChapters|Library|RecentChapters|NewChapterCount|LibraryUpdateStatus)\b/.test(q)) {
+  if (/query\s+(ReaderChapter|MangaChapters|Library|RecentChapters|NewChapterCount|LibraryUpdateStatus|LastUpdate)\b/.test(q)) {
     const res = await network
     if (res) return res
     if (hit) return hit
