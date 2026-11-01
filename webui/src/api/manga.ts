@@ -12,6 +12,7 @@ export interface MangaDetail {
   inLibrary: boolean
   initialized: boolean
   realUrl: string | null
+  categories: { nodes: Array<{ id: number }> }
   source: { id: string; displayName: string } | null
 }
 
@@ -20,6 +21,7 @@ export async function fetchMangaDetail(id: number): Promise<MangaDetail> {
     `query MangaDetail($id: Int!) {
       manga(id: $id) {
         id title author artist description genre status thumbnailUrl inLibrary initialized realUrl
+        categories { nodes { id } }
         source { id displayName }
       }
     }`,

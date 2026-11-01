@@ -169,8 +169,11 @@ async function graphqlQuery(event, req) {
   // - LastUpdate: teks "Terakhir diperbarui: 20 jam lalu" basi — SWR menyajikan
   //   timestamp lama di halaman Updates padahal server baru saja update
   //   (dilaporkan 31 Okt).
+  // - MangaDetail: tombol favorit basi — SWR menyajikan inLibrary lama setelah
+  //   tambah/hapus library, React Query menganggapnya data segar (dilaporkan
+  //   1 Nov).
   // Offline: jatuh ke cache.
-  if (/query\s+(ReaderChapter|MangaChapters|Library|RecentChapters|NewChapterCount|LibraryUpdateStatus|LastUpdate)\b/.test(q)) {
+  if (/query\s+(ReaderChapter|MangaChapters|MangaDetail|Library|RecentChapters|NewChapterCount|LibraryUpdateStatus|LastUpdate)\b/.test(q)) {
     const res = await network
     if (res) return res
     if (hit) return hit

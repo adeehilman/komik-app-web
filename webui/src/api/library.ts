@@ -68,6 +68,18 @@ export async function fetchCategories(): Promise<CategoryItem[]> {
   return data.categories.nodes
 }
 
+/** Set kategori-kategori manga persis seperti pilihan (clear dulu, lalu add). */
+export async function setMangasCategories(ids: number[], categoryIds: number[]): Promise<void> {
+  const clean = categoryIds.filter((c) => c)
+  const patch = clean.length ? { clearCategories: true, addToCategories: clean } : { clearCategories: true }
+  await gql(
+    `mutation UpdateMangasCategories($input: UpdateMangasCategoriesInput!) {
+      updateMangasCategories(input: $input) { clientMutationId }
+    }`,
+    { input: { ids, patch } },
+  )
+}
+
 /** Set kategori (bukan tambah): kategori 0 = Default = tanpa kategori. */
 export async function setMangasCategory(ids: number[], categoryId: number): Promise<void> {
   const patch = categoryId === 0 ? { clearCategories: true } : { clearCategories: true, addToCategories: [categoryId] }

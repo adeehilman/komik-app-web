@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, useParams } from 'react-router-dom'
 import { fetchMangaDetail, refreshMangaDetail, setMangaInLibrary, statusLabel } from '../api/manga'
-import { fetchCategories, setMangasCategory } from '../api/library'
+import { fetchCategories, setMangasCategories } from '../api/library'
 import { Dialog } from '../components/Sheet'
 import {
   deleteDownloads,
@@ -32,6 +32,7 @@ export function MangaPage() {
   const [selected, setSelected] = useState<number[]>([])
   const [busy, setBusy] = useState(false)
   const [catDialog, setCatDialog] = useState(false)
+  const [picked, setPicked] = useState<number[]>([])
   const cats = useQuery({ queryKey: ['categories'], queryFn: fetchCategories, enabled: catDialog })
 
   const invalidate = () =>
@@ -85,17 +86,20 @@ export function MangaPage() {
       await setMangaInLibrary(id, false)
       await invalidate()
     } else {
+      // Tampilkan kategori yang sudah menempel (kasus tambah ulang setelah hapus)
+      // sebagai centang awal — hasil akhir = persis yang dicentang.
+      setPicked(manga.data.categories?.nodes.map((c) => c.id) ?? [])
       setCatDialog(true)
     }
   }
 
-  /** Tambah ke library + set kategori pilihan (dipanggil dari popup kategori). */
-  const addToLibrary = async (categoryId: number | null) => {
+  /** Tambah ke library + set kategori persis seperti yang dicentang (popup). */
+  const addToLibrary = async (categoryIds: number[]) => {
     setCatDialog(false)
     setBusy(true)
     try {
       await setMangaInLibrary(id, true)
-      if (categoryId) await setMangasCategory([id], categoryId)
+      await setMangasCategories([id], categoryIds)
       await invalidate()
     } catch (e) {
       window.alert(`Gagal: ${(e as Error).message}`)
@@ -312,25 +316,42 @@ export function MangaPage() {
         title="Masukin ke kategori mana?"
         onClose={() => setCatDialog(false)}
         actions={
-          <button type="button" className="btn btn-text" onClick={() => setCatDialog(false)}>
-            Batal
-          </button>
+          <>
+            <button type="button" className="btn btn-text" onClick={() => setCatDialog(false)}>
+              Batal
+            </button>
+            <button
+              type="button"
+              className="btn btn-text"
+              disabled={busy}
+              onClick={() => addToLibrary(picked)}
+            >
+              Tambah{picked.length > 0 ? ` (${picked.length})` : ''}
+            </button>
+          </>
         }
       >
         {cats.isPending ? (
           <p className="hint">Memuat kategori…</p>
+        ) : cats.isError ? (
+          <p className="hint">Gagal memuat kategori.</p>
         ) : (
-          cats.data?.map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              className="list-item"
-              disabled={busy}
-              onClick={() => addToLibrary(c.id)}
-            >
-              {c.name}
-            </button>
-          ))
+          cats.data
+            ?.filter((c) => c.id !== 0)
+            .map((c) => (
+              <label key={c.id} className="list-item">
+                <input
+                  type="checkbox"
+                  checked={picked.includes(c.id)}
+                  onChange={(e) =>
+                    setPicked((prev) =>
+                      e.target.checked ? [...prev, c.id] : prev.filter((x) => x !== c.id),
+                    )
+                  }
+                />
+                <span className="list-item-title">{c.name}</span>
+              </label>
+            ))
         )}
       </Dialog>
     </div>
