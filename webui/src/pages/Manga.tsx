@@ -3,6 +3,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, useParams } from 'react-router-dom'
 import { fetchMangaDetail, refreshMangaDetail, setMangaInLibrary, statusLabel } from '../api/manga'
+import { fetchCategories, setMangasCategory } from '../api/library'
+import { Dialog } from '../components/Sheet'
 import {
   deleteDownloads,
   enqueueDownloads,
@@ -29,6 +31,8 @@ export function MangaPage() {
   const [newestFirst, setNewestFirst] = useState(true)
   const [selected, setSelected] = useState<number[]>([])
   const [busy, setBusy] = useState(false)
+  const [catDialog, setCatDialog] = useState(false)
+  const cats = useQuery({ queryKey: ['categories'], queryFn: fetchCategories, enabled: catDialog })
 
   const invalidate = () =>
     Promise.all([
@@ -77,8 +81,27 @@ export function MangaPage() {
 
   const toggleLibrary = async () => {
     if (!manga.data) return
-    await setMangaInLibrary(id, !manga.data.inLibrary)
-    await invalidate()
+    if (manga.data.inLibrary) {
+      await setMangaInLibrary(id, false)
+      await invalidate()
+    } else {
+      setCatDialog(true)
+    }
+  }
+
+  /** Tambah ke library + set kategori pilihan (dipanggil dari popup kategori). */
+  const addToLibrary = async (categoryId: number | null) => {
+    setCatDialog(false)
+    setBusy(true)
+    try {
+      await setMangaInLibrary(id, true)
+      if (categoryId) await setMangasCategory([id], categoryId)
+      await invalidate()
+    } catch (e) {
+      window.alert(`Gagal: ${(e as Error).message}`)
+    } finally {
+      setBusy(false)
+    }
   }
 
   const toggle = (cid: number) =>
@@ -284,6 +307,32 @@ export function MangaPage() {
           )}
         </div>
       )}
+      <Dialog
+        open={catDialog}
+        title="Masukin ke kategori mana?"
+        onClose={() => setCatDialog(false)}
+        actions={
+          <button type="button" className="btn btn-text" onClick={() => setCatDialog(false)}>
+            Batal
+          </button>
+        }
+      >
+        {cats.isPending ? (
+          <p className="hint">Memuat kategori…</p>
+        ) : (
+          cats.data?.map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              className="list-item"
+              disabled={busy}
+              onClick={() => addToLibrary(c.id)}
+            >
+              {c.name}
+            </button>
+          ))
+        )}
+      </Dialog>
     </div>
   )
 }

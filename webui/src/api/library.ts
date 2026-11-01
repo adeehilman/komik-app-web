@@ -58,6 +58,16 @@ export async function setMangasInLibrary(ids: number[], inLibrary: boolean): Pro
   )
 }
 
+/** Daftar kategori saja (ringan, untuk popup pilih kategori). */
+export async function fetchCategories(): Promise<CategoryItem[]> {
+  const data = await gql<{ categories: { nodes: CategoryItem[] } }>(`
+    query Categories {
+      categories(order: [{ by: ORDER }]) { nodes { id name order isDefaultCategory } }
+    }
+  `)
+  return data.categories.nodes
+}
+
 /** Set kategori (bukan tambah): kategori 0 = Default = tanpa kategori. */
 export async function setMangasCategory(ids: number[], categoryId: number): Promise<void> {
   const patch = categoryId === 0 ? { clearCategories: true } : { clearCategories: true, addToCategories: [categoryId] }
