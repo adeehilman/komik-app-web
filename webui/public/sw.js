@@ -8,7 +8,14 @@
  *   query progres (ReaderChapter, MangaChapters) network-first — SWR menyajikan
  *   cache basi sebagai respons selesai, sehingga reader mengunci lastPageRead
  *   lama dan membuka ulang dari halaman 1 padahal server sudah punya progres
- *   baru (terbukti 3x pengujian). Offline tetap jatuh ke cache. Mutation
+ *   baru (terbukti 3x pengujian). Offline tetap jatuh ke cache.
+ *   Internet lambat (bukan mati): network-first tanpa batas waktu membuat
+ *   halaman menggantung di spinner — cache hanya dipakai bila jaringan ERROR.
+ *   Maka network-first dibatasi NETWORK_FIRST_TIMEOUT_MS (2026-11-16): bila
+ *   jaringan tak menjawab dalam batas itu dan cache ada, sajikan cache
+ *   (jaringan tetap jalan di latar dan memperbarui cache); bila tak ada
+ *   cache, tetap tunggu jaringan. Data segar tetap menang bila tiba tepat
+ *   waktu, jadi perbaikan kebasian 29 Okt–1 Nov tidak rusak. Mutation
  *   TIDAK di-cache — KECUALI fetchChapterPages: mutation itu hanya membaca
  *   daftar URL halaman (stabil per chapter), dan reader tidak bisa tampil
  *   tanpa daftar itu, jadi responsnya di-cache dengan pola yang sama.
@@ -34,6 +41,12 @@ const DAY = 24 * 60 * 60 * 1000
 const MAX_AGE = { [PAGES]: 30 * DAY, [COVERS]: 30 * DAY, [ICONS]: 30 * DAY, [API]: 30 * DAY }
 
 const CACHED_AT = 'x-sw-cached-at'
+
+// Batas tunggu network-first (Library, ReaderChapter, dsb.): internet lambat
+// tidak boleh menggantung halaman — lewat batas ini, cache (bila ada) langsung
+// disajikan; jaringan tetap lanjut di latar dan memperbarui cache. Tanpa
+// cache, halaman tetap menunggu jaringan (kunjungan pertama).
+const NETWORK_FIRST_TIMEOUT_MS = 4000
 
 self.addEventListener('install', () => {
   self.skipWaiting()
@@ -113,6 +126,28 @@ async function gqlKey(bodyText) {
   return `${self.location.origin}/__gql__/${(h >>> 0).toString(16)}`
 }
 
+/** Balap sebuah promise melawan timeout; hasil TIMEOUT = kehabisan waktu (bukan gagal). */
+const TIMEOUT = { timeout: true }
+function raceTimeout(promise, ms) {
+  let timer
+  const timeout = new Promise((resolve) => {
+    timer = setTimeout(() => resolve(TIMEOUT), ms)
+  })
+  return Promise.race([
+    promise.then(
+      (value) => {
+        clearTimeout(timer)
+        return value
+      },
+      (err) => {
+        clearTimeout(timer)
+        throw err
+      },
+    ),
+    timeout,
+  ])
+}
+
 /**
  * Cache untuk GraphQL query (+ mutation fetchChapterPages): segar -> sajikan
  * cache + perbarui di belakang layar; kedaluwarsa -> coba jaringan dulu,
@@ -174,9 +209,14 @@ async function graphqlQuery(event, req) {
   //   1 Nov).
   // Offline: jatuh ke cache.
   if (/query\s+(ReaderChapter|MangaChapters|MangaDetail|Library|RecentChapters|NewChapterCount|LibraryUpdateStatus|LastUpdate)\b/.test(q)) {
-    const res = await network
-    if (res) return res
+    const res = await raceTimeout(network, NETWORK_FIRST_TIMEOUT_MS)
+    if (res && res !== TIMEOUT) return res
     if (hit) return hit
+    // Timeout tanpa cache: tetap tunggu jaringan sampai selesai/gagal.
+    if (res === TIMEOUT) {
+      const late = await network
+      if (late) return late
+    }
     return Response.error()
   }
   if (hit && !isExpired(hit, API)) {
