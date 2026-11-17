@@ -32,6 +32,7 @@ export function MangaPage() {
   const [selected, setSelected] = useState<number[]>([])
   const [busy, setBusy] = useState(false)
   const [catDialog, setCatDialog] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
   const [picked, setPicked] = useState<number[]>([])
   const cats = useQuery({ queryKey: ['categories'], queryFn: fetchCategories, enabled: catDialog })
 
@@ -163,15 +164,43 @@ export function MangaPage() {
           back
           title={m?.title ?? ''}
           actions={
-            <button
-              type="button"
-              className="icon-btn"
-              aria-label="Perbarui dari source"
-              disabled={refreshing}
-              onClick={() => refresh({ detail: true, chapters: true })}
-            >
-              <Icon name="refresh" />
-            </button>
+            <div className="manga-menu-wrap">
+              <button
+                type="button"
+                className="icon-btn"
+                aria-label="Perbarui dari source"
+                disabled={refreshing}
+                onClick={() => refresh({ detail: true, chapters: true })}
+              >
+                <Icon name="refresh" />
+              </button>
+              <button
+                type="button"
+                className="icon-btn"
+                aria-label="Menu"
+                onClick={() => setMenuOpen((v) => !v)}
+              >
+                <Icon name="more" />
+              </button>
+              {menuOpen && (
+                <>
+                  <div className="manga-menu-backdrop" onClick={() => setMenuOpen(false)} />
+                  <div className="manga-menu">
+                    <button
+                      type="button"
+                      className="manga-menu-item"
+                      onClick={() => {
+                        setMenuOpen(false)
+                        navigate(`/migrate/${id}`)
+                      }}
+                    >
+                      <Icon name="swapHoriz" size={20} />
+                      <span>Migrate</span>
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           }
           below={
             refreshing ? (

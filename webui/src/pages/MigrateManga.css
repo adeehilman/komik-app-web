@@ -1,0 +1,212 @@
+.migrate-page {
+  padding: 16px 16px 32px;
+}
+
+.migrate-note {
+  margin: 0 0 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  opacity: 0.85;
+}
+
+.migrate-empty {
+  margin: 0 0 16px;
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+.migrate-source-card {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 12px;
+  border-radius: 12px;
+  background-color: var(--surface-container-low);
+}
+
+.migrate-source-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.migrate-source-title {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.migrate-source-meta {
+  margin-top: 2px;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.migrate-thumb {
+  width: 48px;
+  height: 68px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.migrate-thumb-empty {
+  background-color: var(--surface-variant);
+}
+
+.migrate-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 4px;
+  border: none;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.migrate-row-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.migrate-row-title {
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.migrate-row-meta {
+  margin-top: 2px;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.migrate-source-icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.migrate-source-icon-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--surface-variant);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.migrate-search {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.migrate-search-input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(128, 128, 128, 0.4);
+  border-radius: 999px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 14px;
+}
+
+.migrate-btn {
+  flex-shrink: 0;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 999px;
+  background-color: var(--primary);
+  color: var(--on-primary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.migrate-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.migrate-confirm {
+  margin-bottom: 16px;
+  padding: 12px;
+  border-radius: 12px;
+  background-color: var(--surface-container-low);
+}
+
+.migrate-confirm-row {
+  display: flex;
+  gap: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.migrate-confirm-row + .migrate-confirm-row {
+  margin-top: 6px;
+}
+
+.migrate-confirm-label {
+  flex-shrink: 0;
+  width: 36px;
+  opacity: 0.7;
+}
+
+.migrate-confirm-meta {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.migrate-item-hint {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 400;
+  opacity: 0.7;
+}
+
+.migrate-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.migrate-actions-col {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.migrate-actions-col .migrate-btn {
+  padding: 12px 16px;
+}
+
+.migrate-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 14px;
+  opacity: 0.85;
+}
+
+.migrate-result {
+  margin: 0 0 16px;
+  padding-left: 20px;
+  font-size: 14px;
+  line-height: 1.7;
+}

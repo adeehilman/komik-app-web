@@ -13,6 +13,7 @@ import { MorePage } from './pages/More'
 import { SettingsPage } from './pages/Settings'
 import { BackupPage } from './pages/Backup'
 import { MigrationPage } from './pages/Migration'
+import { MigrateMangaPage } from './pages/MigrateManga'
 import './theme/tokens.css'
 
 const queryClient = new QueryClient({
@@ -58,6 +59,7 @@ function Shell() {
         <Route path="/browse" element={<BrowsePage />} />
         <Route path="/browse/source/:sourceId" element={<SourceBrowsePage />} />
         <Route path="/manga/:mangaId" element={<MangaPage />} />
+        <Route path="/migrate/:mangaId" element={<MigrateMangaPage />} />
         <Route path="/reader/:chapterId" element={<ReaderRoute />} />
         <Route path="/more" element={<MorePage />} />
         <Route path="/settings" element={<SettingsPage />} />
